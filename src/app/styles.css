@@ -1,0 +1,79 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  color-scheme: light;
+  --radius: 0.625rem;
+  --background: #f8f9f6;
+  --foreground: #202a24;
+  --card: #f8f9f6;
+  --card-foreground: #202a24;
+  --popover: #f8f9f6;
+  --popover-foreground: #202a24;
+  --primary: #355e46;
+  --primary-foreground: #fff;
+  --secondary: #eff1eb;
+  --secondary-foreground: #202a24;
+  --muted: #eff1eb;
+  --muted-foreground: #6c756e;
+  --accent: #edf2e9;
+  --accent-foreground: #202a24;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #e1e5dc;
+  --input: #e1e5dc;
+  --ring: #538562;
+}
+.dark {
+  color-scheme: dark;
+  --background: #171c19;
+  --foreground: #e1e8df;
+  --card: #171c19;
+  --card-foreground: #e1e8df;
+  --popover: #171c19;
+  --popover-foreground: #e1e8df;
+  --primary: #a1c6a6;
+  --primary-foreground: #172c1d;
+  --secondary: #232b25;
+  --secondary-foreground: #e1e8df;
+  --muted: #232b25;
+  --muted-foreground: #a3b0a5;
+  --accent: #25352a;
+  --accent-foreground: #e1e8df;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: #333e35;
+  --input: #333e35;
+  --ring: #b4d3b2;
+}
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
