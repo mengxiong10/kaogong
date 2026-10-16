@@ -27,7 +27,10 @@ export function ModuleList() {
                   {module.title}
                 </span>
                 <span className="mt-[3px] block text-[10px] text-muted-foreground">
-                  {count} 个知识点<span aria-hidden="true"> · </span>课程待补充
+                  {count} 个知识点<span aria-hidden="true"> · </span>
+                  {module.id === 'data-analysis'
+                    ? '增长率课程已开放'
+                    : '课程待补充'}
                 </span>
               </span>
               <span

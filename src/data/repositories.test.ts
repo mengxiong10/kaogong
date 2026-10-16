@@ -6,6 +6,7 @@ import { CatalogRepository } from './catalog-repository';
 import { ContentRepository } from './content-repository';
 import { PracticeRepository } from './practice-repository';
 import { seedCatalog } from './seed';
+import { growthRateLesson, growthRateQuestions } from './growth-rate-content';
 import { question, session, answerInput } from './test-fixtures';
 
 let db: LearningDatabase;
@@ -33,6 +34,12 @@ describe('本地目录与事务初始化', () => {
     await initializeDatabase(db);
     expect((await catalog.getCatalog()).modules).toHaveLength(6);
     expect(await db.knowledgePoints.count()).toBe(53);
+    expect(await db.lessons.count()).toBe(1);
+    expect(growthRateQuestions).toHaveLength(5);
+    expect(
+      await content.getTrainingQuestions('data-analysis-growth-rate'),
+    ).toHaveLength(5);
+    expect(growthRateLesson.reviewStatus).toBe('verified');
     expect(await db.metadata.count()).toBe(1);
   });
   it('并发初始化不产生重复种子', async () => {
@@ -91,6 +98,27 @@ describe('本地目录与事务初始化', () => {
       (await db.knowledgePoints.get('data-analysis-growth-rate'))?.parentId,
     ).toBe('missing');
   });
+  it('内置内容缺少知识点时初始化回滚，已有历史仍保留', async () => {
+    await addTrainingSession();
+    await practice.appendAnswer(answerInput);
+    await db.knowledgePoints.delete('data-analysis-growth-rate');
+    await db.questions.delete(['growth-rate-direct-01', 1]);
+    const custom = {
+      ...seedCatalog,
+      knowledgePoints: seedCatalog.knowledgePoints.filter(
+        (item) => item.id !== 'data-analysis-growth-rate',
+      ),
+    };
+    await expect(initializeDatabase(db, custom)).rejects.toThrow(
+      '关联知识点不存在',
+    );
+    expect(
+      await db.questions.get(['growth-rate-direct-01', 1]),
+    ).toBeUndefined();
+    expect(await practice.getAnswers()).toHaveLength(1);
+    await initializeDatabase(db);
+    expect(await db.questions.get(['growth-rate-direct-01', 1])).toBeDefined();
+  });
 });
 
 describe('不可变内容版本与关联', () => {
@@ -133,7 +161,7 @@ describe('不可变内容版本与关联', () => {
         materialRef: { id: 'm1', version: 1 },
       }),
     ).rejects.toThrow('材料版本不存在');
-    expect(await db.questions.count()).toBe(0);
+    expect(await db.questions.count()).toBe(5);
   });
   it('共享材料和课程版本保留，支持学习进度', async () => {
     const material = {
@@ -276,11 +304,14 @@ describe('会话恢复与追加历史', () => {
         questionRefs: [{ id: 'q1', version: 2 }],
       }),
     ).rejects.toThrow('不可修改');
-    await practice.saveSession({
-      ...session,
-      status: 'completed',
-      completedAt: answerInput.answeredAt,
-    });
+    await expect(
+      practice.saveSession({
+        ...session,
+        status: 'completed',
+        completedAt: answerInput.answeredAt,
+      }),
+    ).rejects.toThrow('整套交卷');
+    await practice.submitSession('s1', answerInput.answeredAt);
     await expect(practice.saveSession(session)).rejects.toThrow(
       '已完成会话不可修改',
     );
@@ -346,5 +377,138 @@ describe('会话恢复与追加历史', () => {
       elapsedMs: 0,
     });
     expect((await practice.getAnswers())[0]?.outcome).toBe('unanswered');
+  });
+});
+
+describe('整套交卷', () => {
+  it.each(['全对', '全错'] as const)(
+    '%s时五题均有独立历史记录',
+    async (scenario) => {
+      const refs = growthRateQuestions.map(({ id, version }) => ({
+        id,
+        version,
+      }));
+      await practice.createSession({ ...session, questionRefs: refs });
+      await practice.saveSession({
+        ...session,
+        questionRefs: refs,
+        drafts: growthRateQuestions.map((item) => ({
+          questionRef: { id: item.id, version: item.version },
+          selectedOptionIds:
+            scenario === '全对'
+              ? item.correctOptionIds
+              : [
+                  item.options.find(
+                    (option) => !item.correctOptionIds.includes(option.id),
+                  )!.id,
+                ],
+          uncertain: false,
+          elapsedMs: 1000,
+        })),
+      });
+      const answers = await practice.submitSession(
+        's1',
+        answerInput.answeredAt,
+      );
+      expect(answers).toHaveLength(5);
+      expect(
+        answers.every(
+          (item) =>
+            item.outcome === (scenario === '全对' ? 'correct' : 'incorrect'),
+        ),
+      ).toBe(true);
+      expect(await practice.getMistakeStates()).toHaveLength(
+        scenario === '全对' ? 0 : 5,
+      );
+    },
+  );
+
+  it('按草稿批改并原子保存正确、错误、未答和错题；重试不重复记账', async () => {
+    for (const id of ['q1', 'q2', 'q3'])
+      await content.addQuestionVersion({ ...question, id });
+    const refs = ['q1', 'q2', 'q3'].map((id) => ({ id, version: 1 }));
+    await practice.createSession({ ...session, questionRefs: refs });
+    await practice.saveSession({
+      ...session,
+      questionRefs: refs,
+      drafts: [
+        {
+          questionRef: refs[0],
+          selectedOptionIds: ['A'],
+          uncertain: false,
+          elapsedMs: 1000,
+        },
+        {
+          questionRef: refs[1],
+          selectedOptionIds: ['B'],
+          uncertain: true,
+          elapsedMs: 2000,
+        },
+        {
+          questionRef: refs[2],
+          selectedOptionIds: [],
+          uncertain: false,
+          elapsedMs: 500,
+        },
+      ],
+    });
+    const first = await practice.submitSession('s1', answerInput.answeredAt);
+    expect(first.map((entry) => entry.outcome)).toEqual([
+      'correct',
+      'incorrect',
+      'unanswered',
+    ]);
+    expect(first.map((entry) => entry.elapsedMs)).toEqual([1000, 2000, 500]);
+    expect((await practice.getSession('s1'))?.status).toBe('completed');
+    expect(
+      (await practice.getMistakeStates()).map((entry) => entry.questionId),
+    ).toEqual(['q2']);
+    expect(await practice.submitSession('s1', answerInput.answeredAt)).toEqual(
+      first,
+    );
+    expect(await practice.getAnswers('s1')).toHaveLength(3);
+  });
+
+  it('交卷中途失败回滚，修复后重试不丢草稿', async () => {
+    await addTrainingSession();
+    await practice.saveSession({
+      ...session,
+      drafts: [
+        {
+          questionRef: session.questionRefs[0],
+          selectedOptionIds: ['B'],
+          uncertain: false,
+          elapsedMs: 1500,
+        },
+      ],
+    });
+    const hook = () => {
+      throw new Error('模拟答案写入故障');
+    };
+    db.answers.hook('creating', hook);
+    await expect(
+      practice.submitSession('s1', answerInput.answeredAt),
+    ).rejects.toThrow('模拟答案写入故障');
+    expect(await practice.getAnswers('s1')).toHaveLength(0);
+    expect((await practice.getSession('s1'))?.status).toBe('active');
+    expect(await practice.getMistakeStates()).toHaveLength(0);
+    db.answers.hook('creating').unsubscribe(hook);
+    expect(
+      (await practice.submitSession('s1', answerInput.answeredAt))[0]?.outcome,
+    ).toBe('incorrect');
+  });
+
+  it('同一题目跨版本重做仍被标记为重复作答', async () => {
+    await addTrainingSession();
+    await practice.submitSession('s1', answerInput.answeredAt);
+    await content.addQuestionVersion({ ...question, version: 2 });
+    await practice.createSession({
+      ...session,
+      id: 's2',
+      questionRefs: [{ id: 'q1', version: 2 }],
+    });
+    const repeat = await practice.submitSession('s2', answerInput.answeredAt);
+    expect(repeat[0]?.attemptNumber).toBe(2);
+    expect((await practice.getAnswers('s1'))[0]?.questionRef.version).toBe(1);
   });
 });

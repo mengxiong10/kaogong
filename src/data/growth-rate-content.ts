@@ -1,0 +1,140 @@
+import { LessonSchema } from '../domain/catalog';
+import { QuestionSchema } from '../domain/questions';
+
+export const growthRatePointId = 'data-analysis-growth-rate';
+export const growthRateLessonId = 'lesson-data-analysis-growth-rate';
+
+const source = {
+  kind: 'original' as const,
+  title: '湖北行测学习工作台原创增长率教学内容（2026-10-16）',
+  region: '湖北',
+  year: null,
+  license: {
+    status: 'permitted' as const,
+    description: '项目原创教学内容，允许在本应用中使用。',
+  },
+};
+
+export const growthRateLesson = LessonSchema.parse({
+  id: growthRateLessonId,
+  version: 1,
+  knowledgePointId: growthRatePointId,
+  title: '增长率：先找基期，再比变化',
+  bodyMarkdown: `## 识别题型
+
+看到“比上年增长百分之几”“增幅”“同比”“比去年下降多少”，先判断是否在求**增长率**。如果问“增加了多少元”，求的是增长量，不是增长率。
+
+## 核心概念与公式
+
+增长率描述变化量相对于**基期量**的比例。现期量是变化后的数，基期量是变化前的数。
+
+$$\\text{增长率}=\\frac{\\text{现期量}-\\text{基期量}}{\\text{基期量}}\\times100\\%$$
+
+下降时增长率为负；若题目只问“下降百分之几”，通常报告下降幅度的正数，并明确“下降”。
+
+已知现期量和增长率时，反求基期量：
+
+$$\\text{基期量}=\\frac{\\text{现期量}}{1+\\text{增长率}}$$
+
+## 解题方法
+
+1. 圈出时间：确认基期和现期。同比通常与上一年同期比较。
+2. 看清所问：增长率、增长量还是基期量。
+3. 先列式，再算数。分母始终是基期量，负增长的符号要保留。
+4. 比较两个增长率时，先各自计算，再用“百分点”表述两率之差。
+
+## 例题
+
+某项收入由 80 万元增至 100 万元。增长量为 20 万元，基期量为 80 万元，因此增长率为 $20/80=25\\%$。如果误用 100 万元作分母，会得到错误的 20%。
+
+## 易错点
+
+- 把现期量放在分母；把增长量和增长率混为一谈。
+- “下降 20%”对应增长率 $-20\\%$，反求基期量时用 $1-20\\%$。
+- 连续两年分别增长 15% 和 10%，总增长率为 $(1+15\\%)(1+10\\%)-1=26.5\\%$，不能直接相加。
+- 两个增长率相差 5%，严谨表述通常是“相差 5 个百分点”。
+
+## 知识检测
+
+做题前试着口述：什么是基期？分母应该是谁？负增长与百分点如何表达？然后进入 5 题专项练习。`,
+  exampleQuestionRefs: [],
+  source,
+  reviewStatus: 'verified',
+});
+
+const rawQuestions = [
+  {
+    id: 'growth-rate-direct-01',
+    stemMarkdown:
+      '某县公共图书馆全年借阅量从 120 万册增至 150 万册，增长率是多少？',
+    options: ['25%', '20%', '30%', '80%'],
+    correct: 'A',
+    explanationMarkdown: '基期量为 120，增长量为 30。增长率 $=30/120=25\\%$。',
+    difficulty: 'easy',
+  },
+  {
+    id: 'growth-rate-decline-02',
+    stemMarkdown:
+      '某地商品销量由上年的 120 万件降至本年的 96 万件。若用带符号的增长率表示，结果是多少？',
+    options: ['-20%', '20%', '-25%', '25%'],
+    correct: 'A',
+    explanationMarkdown:
+      '增长量为 $96-120=-24$，基期量为 120，因此增长率 $=-24/120=-20\\%$。',
+    difficulty: 'easy',
+  },
+  {
+    id: 'growth-rate-base-03',
+    stemMarkdown:
+      '某项支出本年为 135 万元，比上年增长 12.5%。上年支出是多少万元？',
+    options: ['120', '122', '125', '128'],
+    correct: 'A',
+    explanationMarkdown:
+      '现期量 $=\\text{基期量}\\times(1+12.5\\%)$，所以基期量 $=135/1.125=120$ 万元。',
+    difficulty: 'medium',
+  },
+  {
+    id: 'growth-rate-compound-04',
+    stemMarkdown:
+      '某项收入 2022 年为 200 万元，2023 年增长 15%，2024 年在 2023 年基础上又增长 10%。2024 年比 2022 年增长多少？',
+    options: ['25%', '26.5%', '27.5%', '30%'],
+    correct: 'B',
+    explanationMarkdown:
+      '两年连续增长要连乘：$(1+15\\%)(1+10\\%)-1=26.5\\%$。也可算出 2024 年为 253 万元，$(253-200)/200=26.5\\%$。',
+    difficulty: 'hard',
+  },
+  {
+    id: 'growth-rate-compare-05',
+    stemMarkdown:
+      '甲项目从 80 万元增至 100 万元，乙项目从 150 万元增至 180 万元。甲、乙增长率如何比较？',
+    options: [
+      '甲高 5 个百分点',
+      '乙高 5 个百分点',
+      '甲高 20 个百分点',
+      '两者相同',
+    ],
+    correct: 'A',
+    explanationMarkdown:
+      '甲增长率 $=(100-80)/80=25\\%$，乙增长率 $=(180-150)/150=20\\%$。甲高 5 个百分点。',
+    difficulty: 'medium',
+  },
+] as const;
+
+export const growthRateQuestions = rawQuestions.map((item) =>
+  QuestionSchema.parse({
+    id: item.id,
+    version: 1,
+    type: 'single',
+    stemMarkdown: item.stemMarkdown,
+    options: item.options.map((bodyMarkdown, index) => ({
+      id: 'ABCD'[index],
+      bodyMarkdown,
+    })),
+    correctOptionIds: [item.correct],
+    explanationMarkdown: item.explanationMarkdown,
+    knowledgePointIds: [growthRatePointId],
+    materialRef: null,
+    difficulty: item.difficulty,
+    source,
+    reviewStatus: 'verified',
+  }),
+);

@@ -33,9 +33,22 @@ function KnowledgeTree({
           ) : (
             <div className="knowledge-row flex min-h-[58px] items-center gap-2.5 border-b border-border text-[13px] [&>span:first-of-type]:min-w-0 [&>span:first-of-type]:flex-1 [&>span:first-of-type]:wrap-anywhere">
               <Circle size={13} className="shrink-0 text-muted-foreground" />
-              <span>{point.title}</span>
+              <span>
+                {point.id === 'data-analysis-growth-rate' ? (
+                  <Link
+                    className="inline-flex min-h-11 items-center text-primary"
+                    to="/learn/data-analysis/data-analysis-growth-rate"
+                  >
+                    {point.title}
+                  </Link>
+                ) : (
+                  point.title
+                )}
+              </span>
               <span className="text-[9px] whitespace-nowrap text-muted-foreground">
-                课程待补充
+                {point.id === 'data-analysis-growth-rate'
+                  ? '开始学习'
+                  : '课程待补充'}
               </span>
             </div>
           )}
@@ -80,9 +93,7 @@ export function ModulePage() {
       <KnowledgeTree points={points} parentId={null} />
       <aside className="mt-[25px] flex items-start gap-[11px] rounded-md bg-muted p-4 [&>p]:text-[11px] [&>p]:leading-[1.9] [&>p]:text-muted-foreground [&>svg]:mt-0.5 [&>svg]:shrink-0 [&>svg]:text-primary">
         <BookOpen size={19} />
-        <p>
-          课程正在准备中。你可以先了解知识结构，后续从这里开始学习与专项练习。
-        </p>
+        <p>增长率课程与 5 题练习已经开放，其他知识点的课程将逐步补充。</p>
       </aside>
     </div>
   );

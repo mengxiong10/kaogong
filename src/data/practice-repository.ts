@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { refKey, IdSchema } from '../domain/common';
-import { AnswerRecordSchema, type AnswerRecord } from '../domain/learning';
+import {
+  AnswerRecordSchema,
+  MistakeStateSchema,
+  type AnswerRecord,
+} from '../domain/learning';
+import { gradeSelection } from '../domain/grading';
+import { TimestampSchema } from '../domain/common';
 import {
   PracticeSessionSchema,
   type PracticeSession,
@@ -96,6 +102,8 @@ export class PracticeRepository {
           JSON.stringify(existing) !== JSON.stringify(session)
         )
           throw new Error('已完成会话不可修改');
+        if (existing.status === 'active' && session.status !== 'active')
+          throw new Error('请通过整套交卷完成会话');
         await this.validateDrafts(session);
         await this.db.sessions.put(session);
       },
@@ -105,6 +113,97 @@ export class PracticeRepository {
   async getSession(id: string) {
     const row = await this.db.sessions.get(IdSchema.parse(id));
     return row ? PracticeSessionSchema.parse(row) : undefined;
+  }
+
+  async getSessions() {
+    return (await this.db.sessions.toArray())
+      .map((row) => PracticeSessionSchema.parse(row))
+      .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+  }
+
+  async getMistakeStates() {
+    return (await this.db.mistakes.toArray())
+      .map((row) => MistakeStateSchema.parse(row))
+      .sort((a, b) => a.questionId.localeCompare(b.questionId));
+  }
+
+  async submitSession(
+    id: string,
+    completedAt: string,
+  ): Promise<AnswerRecord[]> {
+    const sessionId = IdSchema.parse(id);
+    const timestamp = TimestampSchema.parse(completedAt);
+    return this.db.transaction(
+      'rw',
+      [this.db.sessions, this.db.answers, this.db.questions, this.db.mistakes],
+      async () => {
+        const raw = await this.db.sessions.get(sessionId);
+        if (!raw) throw new Error('会话不存在');
+        const session = PracticeSessionSchema.parse(raw);
+        const existing = await this.getAnswers(sessionId);
+        if (session.status === 'completed') {
+          if (existing.length !== session.questionRefs.length)
+            throw new Error('已完成会话的答案不完整');
+          return session.questionRefs.map((ref) => {
+            const record = existing.find(
+              (item) => refKey(item.questionRef) === refKey(ref),
+            );
+            if (!record) throw new Error('已完成会话的答案不完整');
+            return record;
+          });
+        }
+        if (existing.length) throw new Error('会话已有逐题记录，不能整套交卷');
+        if (Date.parse(timestamp) < Date.parse(session.startedAt))
+          throw new Error('交卷时间早于开始时间');
+        const records: AnswerRecord[] = [];
+        for (const ref of session.questionRefs) {
+          const question = QuestionSchema.parse(
+            await this.db.questions.get([ref.id, ref.version]),
+          );
+          const draft = session.drafts.find(
+            (item) => refKey(item.questionRef) === refKey(ref),
+          );
+          const selection = draft?.selectedOptionIds ?? [];
+          this.validateSelection(question, selection);
+          const attemptNumber =
+            (await this.db.answers
+              .where('questionRef.id')
+              .equals(ref.id)
+              .count()) + 1;
+          const record = AnswerRecordSchema.parse({
+            id: `${sessionId}:${ref.id}`,
+            sessionId,
+            questionRef: ref,
+            selectedOptionIds: selection,
+            outcome: gradeSelection(question, selection),
+            elapsedMs: draft?.elapsedMs ?? 0,
+            answeredAt: timestamp,
+            attemptNumber,
+          });
+          await this.db.answers.add(record);
+          if (record.outcome === 'incorrect') {
+            const previous = await this.db.mistakes.get(ref.id);
+            await this.db.mistakes.put(
+              MistakeStateSchema.parse({
+                questionId: ref.id,
+                status: 'pending',
+                reason: previous?.reason ?? null,
+                updatedAt: timestamp,
+              }),
+            );
+          }
+          records.push(record);
+        }
+        await this.db.sessions.put(
+          PracticeSessionSchema.parse({
+            ...session,
+            status: 'completed',
+            completedAt: timestamp,
+          }),
+        );
+        return records;
+      },
+    );
   }
 
   /** 仓储计算提交序号；不信任调用方提供的正确性与外键。 */
@@ -144,18 +243,7 @@ export class PracticeRepository {
         if (!raw) throw new Error('历史题目版本不存在');
         const question = QuestionSchema.parse(raw);
         this.validateSelection(question, answer.selectedOptionIds);
-        const correct =
-          answer.selectedOptionIds.length ===
-            question.correctOptionIds.length &&
-          question.correctOptionIds.every((id) =>
-            answer.selectedOptionIds.includes(id),
-          );
-        const expected =
-          answer.selectedOptionIds.length === 0
-            ? 'unanswered'
-            : correct
-              ? 'correct'
-              : 'incorrect';
+        const expected = gradeSelection(question, answer.selectedOptionIds);
         if (expected !== answer.outcome)
           throw new Error('作答结果与题目答案不一致');
         const attemptNumber =

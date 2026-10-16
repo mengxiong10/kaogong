@@ -75,6 +75,43 @@ export class ContentRepository {
     return row ? QuestionSchema.parse(row) : undefined;
   }
 
+  async getTrainingQuestions(knowledgePointId: string) {
+    const id = ContentRefSchema.shape.id.parse(knowledgePointId);
+    const rows = await this.db.questions
+      .where('knowledgePointIds')
+      .equals(id)
+      .toArray();
+    const latest = new Map<string, ReturnType<typeof QuestionSchema.parse>>();
+    for (const row of rows) {
+      const question = QuestionSchema.parse(row);
+      if (
+        question.reviewStatus !== 'verified' ||
+        question.source.license.status !== 'permitted'
+      )
+        continue;
+      if (question.materialRef) {
+        const material = await this.getMaterial(question.materialRef);
+        if (
+          !material ||
+          material.reviewStatus !== 'verified' ||
+          material.source.license.status !== 'permitted'
+        )
+          continue;
+      }
+      if (
+        !latest.has(question.id) ||
+        latest.get(question.id)!.version < question.version
+      )
+        latest.set(question.id, question);
+    }
+    const difficultyOrder = { easy: 0, medium: 1, hard: 2 };
+    return [...latest.values()].sort(
+      (a, b) =>
+        difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty] ||
+        a.id.localeCompare(b.id),
+    );
+  }
+
   async getMaterial(input: ContentRef) {
     const ref = ContentRefSchema.parse(input);
     const row = await this.db.materials.get([ref.id, ref.version]);

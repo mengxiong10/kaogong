@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   BrowserRouter,
   NavLink,
@@ -6,7 +6,14 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom';
-import { BookOpen, House, Moon, Sun, BookOpenCheck } from 'lucide-react';
+import {
+  BookOpen,
+  House,
+  Moon,
+  Sun,
+  BookOpenCheck,
+  PencilLine,
+} from 'lucide-react';
 import { catalogRepository, initializeLocalData } from '../data';
 import type { CatalogView } from '../domain/validate-catalog';
 import { Button } from '../components/ui/button';
@@ -16,6 +23,27 @@ import { HomePage } from '../features/home/HomePage';
 import { KnowledgePage } from '../features/learn/KnowledgePage';
 import { ModulePage } from '../features/learn/ModulePage';
 import { NotFoundPage } from '../features/learn/NotFoundPage';
+
+const LessonPage = lazy(() =>
+  import('../features/learn/LessonPage').then((module) => ({
+    default: module.LessonPage,
+  })),
+);
+const PracticeLandingPage = lazy(() =>
+  import('../features/practice/PracticeLandingPage').then((module) => ({
+    default: module.PracticeLandingPage,
+  })),
+);
+const PracticeSessionPage = lazy(() =>
+  import('../features/practice/PracticeSessionPage').then((module) => ({
+    default: module.PracticeSessionPage,
+  })),
+);
+const PracticeResultPage = lazy(() =>
+  import('../features/practice/PracticeResultPage').then((module) => ({
+    default: module.PracticeResultPage,
+  })),
+);
 
 function AppShell() {
   const [state, setState] = useState<{
@@ -60,7 +88,7 @@ function AppShell() {
   return (
     <div className="mx-auto min-h-dvh max-w-[480px] bg-background text-foreground">
       <a
-        className="fixed -top-25 z-20 bg-primary p-3 text-primary-foreground focus:top-0"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-20 focus:bg-primary focus:p-3 focus:text-primary-foreground"
         href="#main"
       >
         跳至内容
@@ -122,17 +150,38 @@ function AppShell() {
         )}
         {state.status === 'ready' && state.catalog && (
           <CatalogContext.Provider value={state.catalog}>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/learn" element={<KnowledgePage />} />
-              <Route path="/learn/:moduleId" element={<ModulePage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
+            <Suspense
+              fallback={
+                <p role="status" className="px-[22px] py-10 text-sm">
+                  正在打开页面…
+                </p>
+              }
+            >
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/learn" element={<KnowledgePage />} />
+                <Route path="/learn/:moduleId" element={<ModulePage />} />
+                <Route
+                  path="/learn/:moduleId/:knowledgePointId"
+                  element={<LessonPage />}
+                />
+                <Route path="/practice" element={<PracticeLandingPage />} />
+                <Route
+                  path="/practice/session/:sessionId"
+                  element={<PracticeSessionPage />}
+                />
+                <Route
+                  path="/practice/result/:sessionId"
+                  element={<PracticeResultPage />}
+                />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
           </CatalogContext.Provider>
         )}
       </main>
       <nav
-        className="fixed bottom-0 left-1/2 z-10 grid w-full max-w-[480px] -translate-x-1/2 grid-cols-2 border-t border-border bg-background px-[18px] pt-[7px] pb-[calc(7px+env(safe-area-inset-bottom))] [&>a]:flex [&>a]:min-h-[51px] [&>a]:flex-col [&>a]:items-center [&>a]:justify-center [&>a]:gap-[3px] [&>a]:rounded-[5px] [&>a]:text-[10px] [&>a]:text-muted-foreground [&>a.active]:font-semibold [&>a.active]:text-primary"
+        className="fixed bottom-0 left-1/2 z-10 grid w-full max-w-[480px] -translate-x-1/2 grid-cols-3 border-t border-border bg-background px-[18px] pt-[7px] pb-[calc(7px+env(safe-area-inset-bottom))] [&>a]:flex [&>a]:min-h-[51px] [&>a]:flex-col [&>a]:items-center [&>a]:justify-center [&>a]:gap-[3px] [&>a]:rounded-[5px] [&>a]:text-[10px] [&>a]:text-muted-foreground [&>a.active]:font-semibold [&>a.active]:text-primary"
         aria-label="主导航"
       >
         <NavLink to="/" end>
@@ -142,6 +191,10 @@ function AppShell() {
         <NavLink to="/learn">
           <BookOpen size={21} />
           <span>知识体系</span>
+        </NavLink>
+        <NavLink to="/practice">
+          <PencilLine size={21} />
+          <span>专项练习</span>
         </NavLink>
       </nav>
     </div>

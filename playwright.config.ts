@@ -8,6 +8,9 @@ export default defineConfig({
     name: `mobile-${width}`,
     use: {
       browserName: 'chromium',
+      launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+        ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
+        : undefined,
       viewport: { width, height: 844 },
       isMobile: true,
       hasTouch: true,
