@@ -12,6 +12,7 @@ import {
   type PracticeSession,
 } from '../domain/practice';
 import {
+  isTrainingContentEligible,
   QuestionMaterialSchema,
   QuestionSchema,
   type Question,
@@ -56,10 +57,7 @@ export class PracticeRepository {
           const raw = await this.db.questions.get([ref.id, ref.version]);
           if (!raw) throw new Error('会话题目版本不存在');
           const question = QuestionSchema.parse(raw);
-          if (
-            question.reviewStatus !== 'verified' ||
-            question.source.license.status !== 'permitted'
-          )
+          if (!isTrainingContentEligible(question))
             throw new Error('题目尚未校验或未获使用许可');
           if (question.materialRef) {
             const material = QuestionMaterialSchema.parse(
@@ -68,10 +66,7 @@ export class PracticeRepository {
                 question.materialRef.version,
               ]),
             );
-            if (
-              material.reviewStatus !== 'verified' ||
-              material.source.license.status !== 'permitted'
-            )
+            if (!isTrainingContentEligible(material))
               throw new Error('材料尚未校验或未获使用许可');
           }
         }

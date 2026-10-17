@@ -1,38 +1,6 @@
 import type { AnswerRecord } from './learning';
-import { PracticeSessionSchema, type PracticeSession } from './practice';
+import type { PracticeSession } from './practice';
 import type { Question } from './questions';
-
-export function buildGrowthRateSession(
-  questions: readonly Question[],
-  id: string,
-  startedAt: string,
-) {
-  if (
-    questions.length < 5 ||
-    new Set(questions.map((question) => question.id)).size !==
-      questions.length ||
-    questions.some(
-      (question) =>
-        question.type !== 'single' ||
-        !question.knowledgePointIds.includes('data-analysis-growth-rate') ||
-        question.reviewStatus !== 'verified' ||
-        question.source.license.status !== 'permitted',
-    )
-  )
-    throw new Error('增长率练习需要五道经审核且获许可的单选题');
-  return PracticeSessionSchema.parse({
-    id,
-    questionRefs: questions
-      .slice(0, 5)
-      .map(({ id, version }) => ({ id, version })),
-    status: 'active',
-    explanationMode: 'after-submit',
-    currentIndex: 0,
-    drafts: [],
-    startedAt,
-    completedAt: null,
-  });
-}
 
 export function advanceSessionTime(
   session: PracticeSession,
@@ -83,7 +51,7 @@ function median(values: number[]) {
 export function summarizePracticeHistory(
   records: readonly PracticeObservation[],
 ) {
-  return (['easy', 'medium', 'hard'] as const).map((difficulty) => {
+  return (['easy', 'medium', 'hard', 'unrated'] as const).map((difficulty) => {
     const group = records.filter((record) => record.difficulty === difficulty);
     const first = group.filter(
       (record) => record.attemptNumber === 1 && record.outcome !== 'unanswered',

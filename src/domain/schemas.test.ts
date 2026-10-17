@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { seedCatalog } from '../data/seed';
+import seedCatalog from '../content/catalog.json';
 import { CatalogSchema } from './validate-catalog';
 import { QuestionSchema } from './questions';
 import {

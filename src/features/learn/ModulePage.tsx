@@ -7,9 +7,11 @@ import { NotFoundPage } from './NotFoundPage';
 function KnowledgeTree({
   points,
   parentId,
+  moduleId,
 }: {
   points: KnowledgePoint[];
   parentId: string | null;
+  moduleId: string;
 }) {
   const children = points
     .filter((point) => point.parentId === parentId)
@@ -34,25 +36,23 @@ function KnowledgeTree({
             <div className="knowledge-row flex min-h-[58px] items-center gap-2.5 border-b border-border text-[13px] [&>span:first-of-type]:min-w-0 [&>span:first-of-type]:flex-1 [&>span:first-of-type]:wrap-anywhere">
               <Circle size={13} className="shrink-0 text-muted-foreground" />
               <span>
-                {point.id === 'data-analysis-growth-rate' ? (
-                  <Link
-                    className="inline-flex min-h-11 items-center text-primary"
-                    to="/learn/data-analysis/data-analysis-growth-rate"
-                  >
-                    {point.title}
-                  </Link>
-                ) : (
-                  point.title
-                )}
+                <Link
+                  className="inline-flex min-h-11 items-center text-primary"
+                  to={`/learn/${moduleId}/${point.id}`}
+                >
+                  {point.title}
+                </Link>
               </span>
               <span className="text-[9px] whitespace-nowrap text-muted-foreground">
-                {point.id === 'data-analysis-growth-rate'
-                  ? '开始学习'
-                  : '课程待补充'}
+                开始学习
               </span>
             </div>
           )}
-          <KnowledgeTree points={points} parentId={point.id} />
+          <KnowledgeTree
+            points={points}
+            parentId={point.id}
+            moduleId={moduleId}
+          />
         </li>
       ))}
     </ul>
@@ -90,10 +90,10 @@ export function ModulePage() {
         </span>
         <span>教学目录</span>
       </div>
-      <KnowledgeTree points={points} parentId={null} />
+      <KnowledgeTree points={points} parentId={null} moduleId={module.id} />
       <aside className="mt-[25px] flex items-start gap-[11px] rounded-md bg-muted p-4 [&>p]:text-[11px] [&>p]:leading-[1.9] [&>p]:text-muted-foreground [&>svg]:mt-0.5 [&>svg]:shrink-0 [&>svg]:text-primary">
         <BookOpen size={19} />
-        <p>增长率课程与 5 题练习已经开放，其他知识点的课程将逐步补充。</p>
+        <p>本模块课程与真题练习已开放。真题答案来自上游，未经独立核验。</p>
       </aside>
     </div>
   );

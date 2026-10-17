@@ -4,3 +4,6 @@ pnpm-lock.yaml
 test-results
 playwright-report
 coverage
+public/content/bank/
+public/content/all-bank/
+content-pipeline/output/

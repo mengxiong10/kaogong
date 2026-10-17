@@ -1,0 +1,323 @@
+{
+  "schemaVersion": 1,
+  "visibility": "private",
+  "source": "ERRRC/xingcezhenti",
+  "sourceCommit": "278984401124db40da5163a31275b8deb9c282f4",
+  "moduleId": "reasoning",
+  "questionCount": 7732,
+  "materialCount": 0,
+  "chunks": [
+    {
+      "file": "questions-001.json",
+      "count": 100
+    },
+    {
+      "file": "questions-002.json",
+      "count": 100
+    },
+    {
+      "file": "questions-003.json",
+      "count": 100
+    },
+    {
+      "file": "questions-004.json",
+      "count": 100
+    },
+    {
+      "file": "questions-005.json",
+      "count": 100
+    },
+    {
+      "file": "questions-006.json",
+      "count": 100
+    },
+    {
+      "file": "questions-007.json",
+      "count": 100
+    },
+    {
+      "file": "questions-008.json",
+      "count": 100
+    },
+    {
+      "file": "questions-009.json",
+      "count": 100
+    },
+    {
+      "file": "questions-010.json",
+      "count": 100
+    },
+    {
+      "file": "questions-011.json",
+      "count": 100
+    },
+    {
+      "file": "questions-012.json",
+      "count": 100
+    },
+    {
+      "file": "questions-013.json",
+      "count": 100
+    },
+    {
+      "file": "questions-014.json",
+      "count": 100
+    },
+    {
+      "file": "questions-015.json",
+      "count": 100
+    },
+    {
+      "file": "questions-016.json",
+      "count": 100
+    },
+    {
+      "file": "questions-017.json",
+      "count": 100
+    },
+    {
+      "file": "questions-018.json",
+      "count": 100
+    },
+    {
+      "file": "questions-019.json",
+      "count": 100
+    },
+    {
+      "file": "questions-020.json",
+      "count": 100
+    },
+    {
+      "file": "questions-021.json",
+      "count": 100
+    },
+    {
+      "file": "questions-022.json",
+      "count": 100
+    },
+    {
+      "file": "questions-023.json",
+      "count": 100
+    },
+    {
+      "file": "questions-024.json",
+      "count": 100
+    },
+    {
+      "file": "questions-025.json",
+      "count": 100
+    },
+    {
+      "file": "questions-026.json",
+      "count": 100
+    },
+    {
+      "file": "questions-027.json",
+      "count": 100
+    },
+    {
+      "file": "questions-028.json",
+      "count": 100
+    },
+    {
+      "file": "questions-029.json",
+      "count": 100
+    },
+    {
+      "file": "questions-030.json",
+      "count": 100
+    },
+    {
+      "file": "questions-031.json",
+      "count": 100
+    },
+    {
+      "file": "questions-032.json",
+      "count": 100
+    },
+    {
+      "file": "questions-033.json",
+      "count": 100
+    },
+    {
+      "file": "questions-034.json",
+      "count": 100
+    },
+    {
+      "file": "questions-035.json",
+      "count": 100
+    },
+    {
+      "file": "questions-036.json",
+      "count": 100
+    },
+    {
+      "file": "questions-037.json",
+      "count": 100
+    },
+    {
+      "file": "questions-038.json",
+      "count": 100
+    },
+    {
+      "file": "questions-039.json",
+      "count": 100
+    },
+    {
+      "file": "questions-040.json",
+      "count": 100
+    },
+    {
+      "file": "questions-041.json",
+      "count": 100
+    },
+    {
+      "file": "questions-042.json",
+      "count": 100
+    },
+    {
+      "file": "questions-043.json",
+      "count": 100
+    },
+    {
+      "file": "questions-044.json",
+      "count": 100
+    },
+    {
+      "file": "questions-045.json",
+      "count": 100
+    },
+    {
+      "file": "questions-046.json",
+      "count": 100
+    },
+    {
+      "file": "questions-047.json",
+      "count": 100
+    },
+    {
+      "file": "questions-048.json",
+      "count": 100
+    },
+    {
+      "file": "questions-049.json",
+      "count": 100
+    },
+    {
+      "file": "questions-050.json",
+      "count": 100
+    },
+    {
+      "file": "questions-051.json",
+      "count": 100
+    },
+    {
+      "file": "questions-052.json",
+      "count": 100
+    },
+    {
+      "file": "questions-053.json",
+      "count": 100
+    },
+    {
+      "file": "questions-054.json",
+      "count": 100
+    },
+    {
+      "file": "questions-055.json",
+      "count": 100
+    },
+    {
+      "file": "questions-056.json",
+      "count": 100
+    },
+    {
+      "file": "questions-057.json",
+      "count": 100
+    },
+    {
+      "file": "questions-058.json",
+      "count": 100
+    },
+    {
+      "file": "questions-059.json",
+      "count": 100
+    },
+    {
+      "file": "questions-060.json",
+      "count": 100
+    },
+    {
+      "file": "questions-061.json",
+      "count": 100
+    },
+    {
+      "file": "questions-062.json",
+      "count": 100
+    },
+    {
+      "file": "questions-063.json",
+      "count": 100
+    },
+    {
+      "file": "questions-064.json",
+      "count": 100
+    },
+    {
+      "file": "questions-065.json",
+      "count": 100
+    },
+    {
+      "file": "questions-066.json",
+      "count": 100
+    },
+    {
+      "file": "questions-067.json",
+      "count": 100
+    },
+    {
+      "file": "questions-068.json",
+      "count": 100
+    },
+    {
+      "file": "questions-069.json",
+      "count": 100
+    },
+    {
+      "file": "questions-070.json",
+      "count": 100
+    },
+    {
+      "file": "questions-071.json",
+      "count": 100
+    },
+    {
+      "file": "questions-072.json",
+      "count": 100
+    },
+    {
+      "file": "questions-073.json",
+      "count": 100
+    },
+    {
+      "file": "questions-074.json",
+      "count": 100
+    },
+    {
+      "file": "questions-075.json",
+      "count": 100
+    },
+    {
+      "file": "questions-076.json",
+      "count": 100
+    },
+    {
+      "file": "questions-077.json",
+      "count": 100
+    },
+    {
+      "file": "questions-078.json",
+      "count": 32
+    }
+  ]
+}

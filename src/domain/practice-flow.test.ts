@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { question } from '../data/test-fixtures';
-import { growthRateQuestions } from '../data/growth-rate-content';
+import growthRateContent from '../content/growth-rate.json';
 import {
   advanceSessionTime,
-  buildGrowthRateSession,
   summarizeAnswers,
   summarizePracticeHistory,
 } from './practice-flow';
 import { session } from '../data/test-fixtures';
 
-describe('增长率练习规则', () => {
+const growthRateQuestions = growthRateContent.questions;
+
+describe('练习规则与原创题内容核算', () => {
   it('累计当前题用时，保留选择和不确定标记', () => {
     const first = advanceSessionTime(session, 1200);
     const selected = {
@@ -39,39 +39,6 @@ describe('增长率练习规则', () => {
       expect(expected[index]![2]).toBeCloseTo(value);
     });
   });
-  it('只从五道合格增长率单选题建立冻结会话', () => {
-    const questions = Array.from({ length: 5 }, (_, index) => ({
-      ...question,
-      id: `q${index}`,
-    }));
-    const result = buildGrowthRateSession(
-      questions,
-      'new-session',
-      '2026-10-16T10:00:00.000Z',
-    );
-    expect(result.questionRefs).toEqual(
-      questions.map(({ id }) => ({ id, version: 1 })),
-    );
-    expect(result.explanationMode).toBe('after-submit');
-    expect(() =>
-      buildGrowthRateSession(questions.slice(0, 4), 's', result.startedAt),
-    ).toThrow();
-    expect(
-      buildGrowthRateSession(
-        [...questions, { ...question, id: 'q5' }],
-        's',
-        result.startedAt,
-      ).questionRefs,
-    ).toHaveLength(5);
-    expect(() =>
-      buildGrowthRateSession(
-        [{ ...questions[0]!, reviewStatus: 'draft' }, ...questions.slice(1)],
-        's',
-        result.startedAt,
-      ),
-    ).toThrow();
-  });
-
   it('正确、错误和未答分别计数；未答不进入首次正确率', () => {
     const records = [
       { outcome: 'correct', elapsedMs: 1000, attemptNumber: 1 },

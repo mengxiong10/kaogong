@@ -1,15 +1,18 @@
 import { CatalogSchema, type Catalog } from '../domain/validate-catalog';
+import { ContentBatchSchema } from '../domain/content-package';
+import catalogJson from '../content/catalog.json';
+import growthRateJson from '../content/growth-rate.json';
+import allCoursesJson from '../content/all-courses.json';
 import type { LearningDatabase } from './database';
-import { seedCatalog } from './seed';
-import { growthRateLesson, growthRateQuestions } from './growth-rate-content';
-import { LessonSchema } from '../domain/catalog';
-import { QuestionSchema } from '../domain/questions';
+import { writeContentBatch } from './import-content';
 
 export async function initializeDatabase(
   db: LearningDatabase,
-  input: unknown = seedCatalog,
+  input: unknown = catalogJson,
 ): Promise<void> {
   const seed = CatalogSchema.parse(input);
+  const content = ContentBatchSchema.parse(growthRateJson);
+  const courses = ContentBatchSchema.parse(allCoursesJson);
   await db.open();
   await db.transaction(
     'rw',
@@ -19,6 +22,7 @@ export async function initializeDatabase(
       db.knowledgePoints,
       db.lessons,
       db.questions,
+      db.materials,
       db.metadata,
     ],
     async () => {
@@ -36,36 +40,8 @@ export async function initializeDatabase(
         modules: await db.modules.toArray(),
         knowledgePoints: await db.knowledgePoints.toArray(),
       } satisfies Catalog);
-      const knowledgePointIds = new Set(
-        await db.knowledgePoints.toCollection().primaryKeys(),
-      );
-      for (const question of growthRateQuestions) {
-        if (question.knowledgePointIds.some((id) => !knowledgePointIds.has(id)))
-          throw new Error('内置题目关联知识点不存在');
-        const existing = await db.questions.get([
-          question.id,
-          question.version,
-        ]);
-        if (existing) {
-          QuestionSchema.parse(existing);
-          if (JSON.stringify(existing) !== JSON.stringify(question))
-            throw new Error('已有增长率题目版本与内置内容不一致');
-        } else await db.questions.add(question);
-      }
-      const existingLesson = await db.lessons.get([
-        growthRateLesson.id,
-        growthRateLesson.version,
-      ]);
-      if (!knowledgePointIds.has(growthRateLesson.knowledgePointId))
-        throw new Error('内置课程关联知识点不存在');
-      for (const ref of growthRateLesson.exampleQuestionRefs)
-        if (!(await db.questions.get([ref.id, ref.version])))
-          throw new Error('内置课程例题版本不存在');
-      if (existingLesson) {
-        LessonSchema.parse(existingLesson);
-        if (JSON.stringify(existingLesson) !== JSON.stringify(growthRateLesson))
-          throw new Error('已有增长率课程版本与内置内容不一致');
-      } else await db.lessons.add(growthRateLesson);
+      await writeContentBatch(db, content);
+      await writeContentBatch(db, courses);
       if (!(await db.metadata.get('seed-v1')))
         await db.metadata.add({
           key: 'seed-v1',

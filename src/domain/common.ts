@@ -3,10 +3,22 @@ import { z } from 'zod';
 export const IdSchema = z.string().trim().min(1);
 export const VersionSchema = z.number().int().positive();
 export const TimestampSchema = z.iso.datetime();
-export const ReviewStatusSchema = z.enum(['draft', 'reviewed', 'verified']);
+export const ReviewStatusSchema = z.enum([
+  'draft',
+  'reviewed',
+  'verified',
+  'source-provided',
+  'source-derived',
+]);
 export const SourceSchema = z
   .object({
-    kind: z.enum(['official', 'licensed', 'original', 'ai-assisted']),
+    kind: z.enum([
+      'official',
+      'licensed',
+      'original',
+      'ai-assisted',
+      'third-party',
+    ]),
     title: z.string().min(1),
     url: z.url().optional(),
     region: z.string().min(1),

@@ -61,7 +61,7 @@ export function HomePage() {
           </Badge>
         </div>
         <h2 id="welcome-title">看清全貌，找到起点</h2>
-        <p>六大模块、{count} 个知识点。增长率课程和 5 题练习已开放。</p>
+        <p>六大模块、{count} 个知识点。全部课程和对应真题练习已开放。</p>
         <Button className="min-h-11" asChild>
           <Link to="/learn">
             浏览知识体系
@@ -95,7 +95,7 @@ export function HomePage() {
           ) : history.answers === 0 && history.lessons === 0 ? (
             <>
               <h2 id="learning-title">还没有学习记录</h2>
-              <p>从增长率课程和 5 题练习开始，这里会记录你的学习足迹。</p>
+              <p>从任一知识点课程和真题练习开始，这里会记录你的学习足迹。</p>
             </>
           ) : (
             <>

@@ -5,25 +5,26 @@ import { Button } from '@/components/ui/button';
 import { useCatalog } from '@/app/catalog-context';
 import { catalogRepository } from '@/data';
 import type { LessonProgress } from '@/domain/learning';
-import {
-  growthRateLessonId,
-  growthRatePointId,
-} from '@/data/growth-rate-content';
-import { startGrowthRatePractice } from '../practice/start-practice';
+import { startKnowledgePointPractice } from '../practice/start-practice';
 import { MarkdownContent } from './MarkdownContent';
 import { NotFoundPage } from './NotFoundPage';
 
 export function LessonPage() {
   const { moduleId, knowledgePointId } = useParams();
-  const { lessons } = useCatalog();
+  const { lessons, knowledgePoints, modules } = useCatalog();
+  const point = knowledgePoints.find(
+    (item) => item.id === knowledgePointId && item.moduleId === moduleId,
+  );
+  const module = modules.find((item) => item.id === moduleId);
   const navigate = useNavigate();
   const lesson = lessons
     .filter(
       (item) =>
-        item.id === growthRateLessonId &&
-        item.knowledgePointId === growthRatePointId &&
-        item.reviewStatus === 'verified' &&
-        item.source.license.status === 'permitted',
+        item.knowledgePointId === knowledgePointId &&
+        ((item.reviewStatus === 'verified' &&
+          item.source.license.status === 'permitted') ||
+          (item.reviewStatus === 'source-derived' &&
+            item.source.license.status === 'unknown')),
     )
     .sort((a, b) => b.version - a.version)[0];
   const [progress, setProgress] = useState<LessonProgress | null>(null);
@@ -58,12 +59,7 @@ export function LessonPage() {
     };
   }, [lesson]);
 
-  if (
-    moduleId !== 'data-analysis' ||
-    knowledgePointId !== growthRatePointId ||
-    !lesson
-  )
-    return <NotFoundPage />;
+  if (!point || !module || !lesson) return <NotFoundPage />;
 
   async function complete() {
     if (!lesson) return;
@@ -83,9 +79,10 @@ export function LessonPage() {
   }
 
   async function start() {
+    if (!module || !point) return;
     setStarting(true);
     try {
-      const id = await startGrowthRatePractice();
+      const id = await startKnowledgePointPractice(module.id, point.id);
       navigate(`/practice/session/${id}`);
     } catch {
       setError('练习暂时无法创建，请稍后重试。');
@@ -96,20 +93,20 @@ export function LessonPage() {
   return (
     <article className="px-[22px] pt-[28px] pb-8">
       <Link
-        to="/learn/data-analysis"
+        to={`/learn/${module.id}`}
         className="mb-5 inline-flex min-h-11 items-center gap-2 text-xs text-muted-foreground"
       >
         <ArrowLeft size={16} />
-        资料分析目录
+        {module.title}目录
       </Link>
       <p className="mb-2 text-[10px] tracking-[1.2px] text-muted-foreground">
-        资料分析 / 增长率 · 课程 01
+        {module.title} / {point.title} · 课程 01
       </p>
       <h1 className="text-[25px] leading-[1.4] font-semibold">
         {lesson.title}
       </h1>
       <p className="mt-3 text-xs leading-[1.8] text-muted-foreground">
-        先辨认题型，再找基期、列式计算。完成课程后用 5 道单选题检验方法。
+        完成课程后可练习本知识点真题。来源答案未经独立核验。
       </p>
       <div className="mt-7 border-t border-border pt-1">
         <MarkdownContent>{lesson.bodyMarkdown}</MarkdownContent>
@@ -129,7 +126,7 @@ export function LessonPage() {
           {progress?.status === 'completed' ? '已完成课程' : '标记课程已学完'}
         </Button>
         <Button className="min-h-11 w-full" onClick={start} disabled={starting}>
-          {starting ? '正在准备练习…' : '开始 5 题练习'}
+          {starting ? '正在准备练习…' : '开始练习真题'}
           <ArrowRight />
         </Button>
       </div>

@@ -2,11 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Flag, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCatalog } from '@/app/catalog-context';
 import { contentRepository, practiceRepository } from '@/data';
 import type { PracticeSession } from '@/domain/practice';
 import type { Question } from '@/domain/questions';
 import { advanceSessionTime } from '@/domain/practice-flow';
-import { MarkdownContent } from '../learn/MarkdownContent';
+import {
+  InlineMarkdownContent,
+  MarkdownContent,
+} from '../learn/MarkdownContent';
 
 function displayTime(ms: number) {
   const seconds = Math.floor(ms / 1000);
@@ -16,10 +20,12 @@ function displayTime(ms: number) {
 }
 
 export function PracticeSessionPage() {
+  const { modules, knowledgePoints } = useCatalog();
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState<PracticeSession | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [materials, setMaterials] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -47,10 +53,22 @@ export function PracticeSessionPage() {
         );
         if (items.some((item) => !item))
           throw new Error('练习中的题目版本缺失');
+        const materialEntries = await Promise.all(
+          (items as Question[])
+            .filter((item) => item.materialRef)
+            .map(async (item) => {
+              const material = await contentRepository.getMaterial(
+                item.materialRef!,
+              );
+              if (!material) throw new Error('练习材料版本缺失');
+              return [item.id, material.bodyMarkdown] as const;
+            }),
+        );
         if (active) {
           sessionRef.current = loaded;
           setSession(loaded);
           setQuestions(items as Question[]);
+          setMaterials(Object.fromEntries(materialEntries));
           lastTick.current = performance.now();
           setLoading(false);
         }
@@ -164,6 +182,11 @@ export function PracticeSessionPage() {
   const index = session.currentIndex;
   const question = questions[index];
   if (!question) return null;
+  const moduleId = knowledgePoints.find((point) =>
+    question.knowledgePointIds.includes(point.id),
+  )?.moduleId;
+  const moduleTitle =
+    modules.find((module) => module.id === moduleId)?.title ?? '行测';
   const draft = session.drafts.find(
     (item) => item.questionRef.id === question.id,
   );
@@ -195,7 +218,8 @@ export function PracticeSessionPage() {
         </span>
       </div>
       <p className="mt-4 text-[10px] tracking-[1.2px] text-muted-foreground">
-        资料分析 / 增长率 · 单选
+        {moduleTitle} /{' '}
+        {question.reviewStatus === 'source-provided' ? '真题' : '原创题'} · 单选
       </p>
       <h1 className="mt-1 text-[22px] font-semibold">
         第 {index + 1} 题{' '}
@@ -242,7 +266,32 @@ export function PracticeSessionPage() {
         <h2 id="question-heading" className="sr-only">
           第 {index + 1} 题题干
         </h2>
+        {materials[question.id] && (
+          <div className="mb-6 rounded-md border border-border bg-muted/40 p-3">
+            <p className="mb-2 text-xs font-semibold">
+              共用资料 · 可横向滑动查看表格
+            </p>
+            <MarkdownContent>{materials[question.id] ?? ''}</MarkdownContent>
+          </div>
+        )}
         <MarkdownContent>{question.stemMarkdown}</MarkdownContent>
+        {question.reviewStatus === 'source-provided' && (
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            {question.source.url ? (
+              <a
+                className="underline"
+                href={question.source.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {question.source.title}
+              </a>
+            ) : (
+              question.source.title
+            )}{' '}
+            · 来源答案，未独立核验
+          </p>
+        )}
         <div className="mt-6 space-y-3" role="group" aria-label="选择答案">
           {question.options.map((option) => {
             const selected =
@@ -268,7 +317,9 @@ export function PracticeSessionPage() {
                 <span className="mr-3 w-5 shrink-0 font-semibold">
                   {option.id}
                 </span>
-                {option.bodyMarkdown}
+                <InlineMarkdownContent>
+                  {option.bodyMarkdown}
+                </InlineMarkdownContent>
               </Button>
             );
           })}

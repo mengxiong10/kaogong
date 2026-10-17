@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "visibility": "private",
+  "source": "ERRRC/xingcezhenti",
+  "sourceCommit": "278984401124db40da5163a31275b8deb9c282f4",
+  "moduleId": "data-analysis",
+  "questionCount": 2587,
+  "materialCount": 597,
+  "chunks": [
+    {
+      "file": "questions-001.json",
+      "count": 100
+    },
+    {
+      "file": "questions-002.json",
+      "count": 100
+    },
+    {
+      "file": "questions-003.json",
+      "count": 100
+    },
+    {
+      "file": "questions-004.json",
+      "count": 100
+    },
+    {
+      "file": "questions-005.json",
+      "count": 100
+    },
+    {
+      "file": "questions-006.json",
+      "count": 100
+    },
+    {
+      "file": "questions-007.json",
+      "count": 100
+    },
+    {
+      "file": "questions-008.json",
+      "count": 100
+    },
+    {
+      "file": "questions-009.json",
+      "count": 100
+    },
+    {
+      "file": "questions-010.json",
+      "count": 100
+    },
+    {
+      "file": "questions-011.json",
+      "count": 100
+    },
+    {
+      "file": "questions-012.json",
+      "count": 100
+    },
+    {
+      "file": "questions-013.json",
+      "count": 100
+    },
+    {
+      "file": "questions-014.json",
+      "count": 100
+    },
+    {
+      "file": "questions-015.json",
+      "count": 100
+    },
+    {
+      "file": "questions-016.json",
+      "count": 100
+    },
+    {
+      "file": "questions-017.json",
+      "count": 100
+    },
+    {
+      "file": "questions-018.json",
+      "count": 100
+    },
+    {
+      "file": "questions-019.json",
+      "count": 100
+    },
+    {
+      "file": "questions-020.json",
+      "count": 100
+    },
+    {
+      "file": "questions-021.json",
+      "count": 100
+    },
+    {
+      "file": "questions-022.json",
+      "count": 100
+    },
+    {
+      "file": "questions-023.json",
+      "count": 100
+    },
+    {
+      "file": "questions-024.json",
+      "count": 100
+    },
+    {
+      "file": "questions-025.json",
+      "count": 100
+    },
+    {
+      "file": "questions-026.json",
+      "count": 87
+    }
+  ]
+}

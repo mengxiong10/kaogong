@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCatalog } from '@/app/catalog-context';
 import { contentRepository, practiceRepository } from '@/data';
-import { growthRatePointId } from '@/data/growth-rate-content';
 import type { AnswerRecord } from '@/domain/learning';
 import type { PracticeSession } from '@/domain/practice';
 import type { Question } from '@/domain/questions';
@@ -11,11 +11,15 @@ import {
   summarizeAnswers,
   summarizePracticeHistory,
 } from '@/domain/practice-flow';
-import { MarkdownContent } from '../learn/MarkdownContent';
+import {
+  InlineMarkdownContent,
+  MarkdownContent,
+} from '../learn/MarkdownContent';
 
 type Result = {
   session: PracticeSession;
   questions: Question[];
+  materials: Record<string, string>;
   answers: AnswerRecord[];
   difficultyHistory: ReturnType<typeof summarizePracticeHistory>;
 };
@@ -25,6 +29,7 @@ function formatMs(ms: number) {
 }
 
 export function PracticeResultPage() {
+  const { modules, knowledgePoints } = useCatalog();
   const { sessionId } = useParams();
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState('');
@@ -52,6 +57,20 @@ export function PracticeResultPage() {
           questions.some((item) => !item)
         )
           throw new Error('练习结果不完整');
+        const sessionPoints = new Set(
+          (questions as Question[]).flatMap((item) => item.knowledgePointIds),
+        );
+        const materialEntries = await Promise.all(
+          (questions as Question[])
+            .filter((item) => item.materialRef)
+            .map(async (item) => {
+              const material = await contentRepository.getMaterial(
+                item.materialRef!,
+              );
+              if (!material) throw new Error('练习材料版本缺失');
+              return [item.id, material.bodyMarkdown] as const;
+            }),
+        );
         const sessionsById = new Map(
           allSessions.map((item) => [item.id, item]),
         );
@@ -61,7 +80,7 @@ export function PracticeResultPage() {
               record.questionRef,
             );
             if (!question) throw new Error('历史题目版本缺失');
-            if (!question.knowledgePointIds.includes(growthRatePointId))
+            if (!question.knowledgePointIds.some((id) => sessionPoints.has(id)))
               return null;
             const draft = sessionsById
               .get(record.sessionId)
@@ -85,6 +104,7 @@ export function PracticeResultPage() {
             session,
             answers,
             questions: questions as Question[],
+            materials: Object.fromEntries(materialEntries),
             difficultyHistory,
           });
       } catch {
@@ -113,6 +133,12 @@ export function PracticeResultPage() {
       </p>
     );
   const summary = summarizeAnswers(result.answers);
+  const isBank = result.questions[0]?.reviewStatus === 'source-provided';
+  const moduleId = knowledgePoints.find((point) =>
+    result.questions[0]?.knowledgePointIds.includes(point.id),
+  )?.moduleId;
+  const moduleTitle =
+    modules.find((module) => module.id === moduleId)?.title ?? '行测';
   return (
     <div className="px-[22px] pt-6 pb-10">
       <Link
@@ -123,7 +149,7 @@ export function PracticeResultPage() {
         练习列表
       </Link>
       <p className="mt-3 text-[10px] tracking-[1.2px] text-muted-foreground">
-        资料分析 / 增长率 · 已交卷
+        {moduleTitle} / {isBank ? '真题' : '原创题'} · 已交卷
       </p>
       <h1 className="mt-1 text-[26px] font-semibold">练习结果</h1>
       <p className="mt-2 text-xs text-muted-foreground">
@@ -163,7 +189,7 @@ export function PracticeResultPage() {
             : formatMs(summary.medianAnsweredMs)}
           。
         </p>
-        <p>五题只提供本次反馈，尚不足以判断正确率是否稳定或识别薄弱模块。</p>
+        <p>本套结果只提供作答反馈；不同题目与多次练习才能观察能力趋势。</p>
       </div>
       <section
         className="mt-8 border-t border-border pt-6"
@@ -173,7 +199,7 @@ export function PracticeResultPage() {
           按难度看用时
         </h2>
         <p className="mt-2 text-xs leading-[1.7] text-muted-foreground">
-          以下汇总本机增长率练习历史。首次和重复分别统计；未答题不计入正确率和中位用时。
+          以下汇总本机练习历史。首次和重复分别统计；未答题不计入正确率和中位用时。
         </p>
         <div className="mt-4 space-y-3">
           {result.difficultyHistory.map((row) => (
@@ -186,7 +212,9 @@ export function PracticeResultPage() {
                   ? '简单'
                   : row.difficulty === 'medium'
                     ? '中等'
-                    : '较难'}
+                    : row.difficulty === 'hard'
+                      ? '较难'
+                      : '未标定'}
               </h3>
               <p>
                 首次：{row.firstCorrect}/{row.firstAnswered} 正确 · 中位用时{' '}
@@ -235,9 +263,36 @@ export function PracticeResultPage() {
                   · {formatMs(record.elapsedMs)}
                 </span>
               </div>
+              {result.materials[question.id] && (
+                <div className="mt-3 rounded-md border border-border bg-muted/40 p-3">
+                  <p className="mb-2 text-xs font-semibold">
+                    共用资料 · 可横向滑动查看表格
+                  </p>
+                  <MarkdownContent>
+                    {result.materials[question.id] ?? ''}
+                  </MarkdownContent>
+                </div>
+              )}
               <div className="mt-3">
                 <MarkdownContent>{question.stemMarkdown}</MarkdownContent>
               </div>
+              <ul className="mt-3 space-y-1.5 text-xs">
+                {question.options.map((option) => (
+                  <li
+                    key={option.id}
+                    className={
+                      question.correctOptionIds.includes(option.id)
+                        ? 'font-semibold text-primary'
+                        : ''
+                    }
+                  >
+                    {option.id}.{' '}
+                    <InlineMarkdownContent>
+                      {option.bodyMarkdown}
+                    </InlineMarkdownContent>
+                  </li>
+                ))}
+              </ul>
               <p className="mt-3 text-xs">
                 你的答案：
                 {record.selectedOptionIds.length
@@ -251,7 +306,25 @@ export function PracticeResultPage() {
                 </MarkdownContent>
               </div>
               <p className="mt-2 text-[11px] text-muted-foreground">
-                知识点：增长率
+                {question.reviewStatus === 'source-provided' ? (
+                  <>
+                    {question.source.url ? (
+                      <a
+                        className="underline"
+                        href={question.source.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {question.source.title}
+                      </a>
+                    ) : (
+                      question.source.title
+                    )}{' '}
+                    · 来源答案，未独立核验
+                  </>
+                ) : (
+                  '知识点：增长率'
+                )}
               </p>
             </li>
           );

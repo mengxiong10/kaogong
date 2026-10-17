@@ -1,5 +1,9 @@
 import { LessonSchema } from '../domain/catalog';
-import { QuestionMaterialSchema, QuestionSchema } from '../domain/questions';
+import {
+  isTrainingContentEligible,
+  QuestionMaterialSchema,
+  QuestionSchema,
+} from '../domain/questions';
 import type { ContentRef } from '../domain/common';
 import { ContentRefSchema } from '../domain/common';
 import type { LearningDatabase } from './database';
@@ -82,21 +86,20 @@ export class ContentRepository {
       .equals(id)
       .toArray();
     const latest = new Map<string, ReturnType<typeof QuestionSchema.parse>>();
+    const materialEligibility = new Map<string, boolean>();
     for (const row of rows) {
       const question = QuestionSchema.parse(row);
-      if (
-        question.reviewStatus !== 'verified' ||
-        question.source.license.status !== 'permitted'
-      )
-        continue;
+      if (!isTrainingContentEligible(question)) continue;
       if (question.materialRef) {
-        const material = await this.getMaterial(question.materialRef);
-        if (
-          !material ||
-          material.reviewStatus !== 'verified' ||
-          material.source.license.status !== 'permitted'
-        )
-          continue;
+        const key = `${question.materialRef.id}@${question.materialRef.version}`;
+        if (!materialEligibility.has(key)) {
+          const material = await this.getMaterial(question.materialRef);
+          materialEligibility.set(
+            key,
+            Boolean(material && isTrainingContentEligible(material)),
+          );
+        }
+        if (!materialEligibility.get(key)) continue;
       }
       if (
         !latest.has(question.id) ||
@@ -104,7 +107,7 @@ export class ContentRepository {
       )
         latest.set(question.id, question);
     }
-    const difficultyOrder = { easy: 0, medium: 1, hard: 2 };
+    const difficultyOrder = { easy: 0, medium: 1, hard: 2, unrated: 3 };
     return [...latest.values()].sort(
       (a, b) =>
         difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty] ||

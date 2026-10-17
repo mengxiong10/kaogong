@@ -1,0 +1,113 @@
+{
+  "sourceCommit": "278984401124db40da5163a31275b8deb9c282f4",
+  "questionCount": 25978,
+  "materialCount": 597,
+  "assetCount": 35107,
+  "modules": {
+    "politics": {
+      "questions": 1019,
+      "materials": 0,
+      "byPoint": {
+        "politics-basic-theory": 531,
+        "politics-meetings-policy": 238,
+        "politics-theory-practice": 106,
+        "politics-policy-application": 144
+      },
+      "skipped": {
+        "structure": 73,
+        "duplicate-or-existing": 1213
+      }
+    },
+    "general": {
+      "questions": 4489,
+      "materials": 0,
+      "byPoint": {
+        "general-geography": 269,
+        "general-law": 687,
+        "general-humanities": 1806,
+        "general-economics": 210,
+        "general-national-context": 335,
+        "general-science": 769,
+        "general-history": 239,
+        "general-politics": 174
+      },
+      "skipped": {
+        "duplicate-or-existing": 4259,
+        "structure": 415
+      }
+    },
+    "verbal": {
+      "questions": 6951,
+      "materials": 0,
+      "byPoint": {
+        "verbal-cloze": 2689,
+        "verbal-intention": 830,
+        "verbal-main-idea": 2229,
+        "verbal-sentence-order": 337,
+        "verbal-details": 266,
+        "verbal-sentence-fill": 600
+      },
+      "skipped": {
+        "duplicate-or-existing": 9037,
+        "structure": 12
+      }
+    },
+    "quantitative": {
+      "questions": 3200,
+      "materials": 0,
+      "byPoint": {
+        "quantitative-arithmetic": 1741,
+        "quantitative-work": 274,
+        "quantitative-travel": 277,
+        "quantitative-geometry": 271,
+        "quantitative-profit": 165,
+        "quantitative-permutations": 195,
+        "quantitative-probability": 181,
+        "quantitative-sequences": 58,
+        "quantitative-inclusion-exclusion": 38
+      },
+      "skipped": {
+        "duplicate-or-existing": 3224,
+        "structure": 24
+      }
+    },
+    "reasoning": {
+      "questions": 7732,
+      "materials": 0,
+      "byPoint": {
+        "reasoning-figures": 1818,
+        "reasoning-definitions": 1552,
+        "reasoning-analogy": 2168,
+        "reasoning-strengthen-weaken": 919,
+        "reasoning-logic": 781,
+        "reasoning-translation": 164,
+        "reasoning-premise-conclusion": 301,
+        "reasoning-analytical": 29
+      },
+      "skipped": {
+        "duplicate-or-existing": 9115,
+        "structure": 12
+      }
+    },
+    "data-analysis": {
+      "questions": 2587,
+      "materials": 597,
+      "byPoint": {
+        "data-analysis-comprehensive": 1132,
+        "data-analysis-proportion": 305,
+        "data-analysis-growth-rate": 728,
+        "data-analysis-average": 252,
+        "data-analysis-estimation": 133,
+        "data-analysis-multiple": 10,
+        "data-analysis-terms": 9,
+        "data-analysis-truncated-division": 3,
+        "data-analysis-growth-amount": 15
+      },
+      "skipped": {
+        "duplicate-or-existing": 5515,
+        "missing-image": 2,
+        "no-material": 11
+      }
+    }
+  }
+}

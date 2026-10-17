@@ -33,7 +33,7 @@ export const QuestionSchema = z
     explanationMarkdown: z.string().min(1),
     knowledgePointIds: z.array(IdSchema).min(1),
     materialRef: ContentRefSchema.nullable(),
-    difficulty: z.enum(['easy', 'medium', 'hard']),
+    difficulty: z.enum(['easy', 'medium', 'hard', 'unrated']),
     source: SourceSchema,
     reviewStatus: ReviewStatusSchema,
   })
@@ -79,3 +79,15 @@ export const QuestionSchema = z
   });
 export type Question = z.infer<typeof QuestionSchema>;
 export type QuestionMaterial = z.infer<typeof QuestionMaterialSchema>;
+
+export function isTrainingContentEligible(
+  content: Pick<Question | QuestionMaterial, 'source' | 'reviewStatus'>,
+) {
+  return (
+    (content.reviewStatus === 'verified' &&
+      content.source.license.status === 'permitted') ||
+    (content.reviewStatus === 'source-provided' &&
+      content.source.kind === 'third-party' &&
+      content.source.license.status === 'unknown')
+  );
+}

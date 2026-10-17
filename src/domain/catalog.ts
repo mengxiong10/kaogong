@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { IdSchema, SourceSchema, VersionSchema } from './common';
+import {
+  IdSchema,
+  ReviewStatusSchema,
+  SourceSchema,
+  VersionSchema,
+} from './common';
 
 export const ExamProfileSchema = z
   .object({
@@ -43,7 +48,7 @@ export const LessonSchema = z
       z.object({ id: IdSchema, version: VersionSchema }).strict(),
     ),
     source: SourceSchema,
-    reviewStatus: z.enum(['draft', 'reviewed', 'verified']),
+    reviewStatus: ReviewStatusSchema,
   })
   .strict();
 

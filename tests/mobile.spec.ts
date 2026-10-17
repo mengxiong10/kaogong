@@ -65,7 +65,7 @@ test('初始化不重复、数据库真实持久化与无模拟记录', async ({
     db.close();
     return counts;
   });
-  expect(counts).toEqual([6, 53, 0, 0, 1]);
+  expect(counts).toEqual([6, 53, 0, 0, 48]);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -73,7 +73,40 @@ test('初始化不重复、数据库真实持久化与无模拟记录', async ({
   ).toBe(true);
 });
 
-test('增长率课程、草稿恢复、统一交卷和重复作答', async ({ page }, testInfo) => {
+test('新课程可从目录进入并创建对应模块的真题练习', async ({ page }) => {
+  await page.goto('/learn/politics');
+  await page.getByRole('link', { name: '基本政治理论' }).click();
+  await expect(
+    page.getByRole('heading', { name: /基本政治理论：从真题理解考点/ }),
+  ).toBeVisible();
+  await expect(page.getByText('真题例题')).toBeVisible();
+  await page.getByRole('button', { name: '开始练习真题' }).click();
+  await expect(
+    page.getByRole('heading', { level: 1, name: /第 1 题/ }),
+  ).toBeVisible();
+  await expect(page.getByText('来源答案，未独立核验')).toBeVisible();
+});
+
+test('大模块首次导入后可交卷并显示正确模块', async ({ page }) => {
+  test.setTimeout(60000);
+  await page.goto('/practice');
+  await page.getByRole('button', { name: '练习判断推理' }).click();
+  await expect(page.getByText('判断推理 / 真题 · 单选')).toBeVisible({
+    timeout: 45000,
+  });
+  await page
+    .getByRole('group', { name: '选择答案' })
+    .getByRole('button')
+    .first()
+    .click();
+  await page.getByRole('button', { name: /交卷并查看解析/ }).click();
+  await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible();
+  await expect(page.getByText('判断推理 / 真题 · 已交卷')).toBeVisible();
+});
+
+test('课程和练习入口统一使用真题，草稿恢复与交卷正常', async ({
+  page,
+}, testInfo) => {
   await page.goto('/learn/data-analysis');
   await page.getByRole('link', { name: '增长率' }).click();
   await expect(
@@ -86,21 +119,25 @@ test('增长率课程、草稿恢复、统一交卷和重复作答', async ({ pa
   });
   await page.getByRole('button', { name: '标记课程已学完' }).click();
   await expect(page.getByRole('button', { name: '已完成课程' })).toBeVisible();
-  await page.getByRole('button', { name: '开始 5 题练习' }).click();
+  await page.getByRole('button', { name: '开始练习真题' }).click();
   await expect(
     page.getByRole('heading', { level: 1, name: /第 1 题/ }),
   ).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('session.png') });
-  await page.getByRole('button', { name: 'A -20%' }).click();
+  await expect(page.getByText('来源答案，未独立核验')).toBeVisible();
+  await page
+    .getByRole('group', { name: '选择答案' })
+    .getByRole('button')
+    .first()
+    .click();
   await page.getByRole('button', { name: '标记不确定' }).click();
   await expect(page.getByText(/已保存/)).toBeVisible();
   await page.waitForTimeout(1200);
   await expect(page.getByLabel('练习用时 00:00')).toHaveCount(0);
   await page.reload();
-  await expect(page.getByRole('button', { name: 'A -20%' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(
+    page.getByRole('group', { name: '选择答案' }).getByRole('button').first(),
+  ).toHaveAttribute('aria-pressed', 'true');
   await expect(
     page.getByRole('button', { name: '已标记不确定' }),
   ).toBeVisible();
@@ -109,13 +146,18 @@ test('增长率课程、草稿恢复、统一交卷和重复作答', async ({ pa
   await expect(
     page.getByRole('heading', { name: '继续未完成练习' }),
   ).toBeVisible();
-  await page.getByRole('link', { name: /增长率 · 5 题 · 已到第 1 题/ }).click();
-  await expect(page.getByRole('button', { name: 'A -20%' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await page
+    .getByRole('link', { name: /真题练习 · 5 题 · 已到第 1 题/ })
+    .click();
+  await expect(
+    page.getByRole('group', { name: '选择答案' }).getByRole('button').first(),
+  ).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: '下一题' }).click();
-  await page.getByRole('button', { name: 'B 20%' }).click();
+  await page
+    .getByRole('group', { name: '选择答案' })
+    .getByRole('button')
+    .nth(1)
+    .click();
   await expect(page.getByText(/已保存/)).toBeVisible();
   await page.getByRole('button', { name: /交卷并查看解析/ }).click();
   await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible();
@@ -124,7 +166,7 @@ test('增长率课程、草稿恢复、统一交卷和重复作答', async ({ pa
     fullPage: true,
   });
   await expect(
-    page.getByText('首次作答：1/2 题正确；重复作答：0/0 题正确。'),
+    page.getByText(/首次作答：\d\/2 题正确；重复作答：0\/0 题正确。/),
   ).toBeVisible();
   await expect(
     page.getByRole('heading', { name: '按难度看用时' }),
@@ -133,18 +175,55 @@ test('增长率课程、草稿恢复、统一交卷和重复作答', async ({ pa
   await page.reload();
   await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible();
   await page.getByRole('link', { name: '再练一套' }).click();
-  await page.getByRole('button', { name: '开始一套新练习' }).click();
-  await page.getByRole('button', { name: 'A -20%' }).click();
+  await expect(
+    page.getByRole('button', { name: '开始一套新练习' }),
+  ).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '开始真题题组' })).toHaveCount(
+    0,
+  );
+  await page.getByRole('button', { name: '开始练习真题' }).click();
+  await expect(page.getByText('来源答案，未独立核验')).toBeVisible();
+  await page
+    .getByRole('group', { name: '选择答案' })
+    .getByRole('button')
+    .first()
+    .click();
   await expect(page.getByText(/已保存/)).toBeVisible();
   await page.getByRole('button', { name: /交卷并查看解析/ }).click();
   await expect(
-    page.getByText('首次作答：0/0 题正确；重复作答：1/1 题正确。'),
+    page.getByText(/首次作答：\d\/1 题正确；重复作答：0\/0 题正确。/),
   ).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
+});
+
+test('私人真题练习显示共享表格图片并保留来源状态', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/practice');
+  await page.getByRole('button', { name: '开始练习真题' }).click();
+  await expect(page.getByText('共用资料 · 可横向滑动查看表格')).toBeVisible();
+  await expect(page.getByText('来源答案，未独立核验')).toBeVisible();
+  const image = page.locator('img[src*="/content/bank/assets/"]').first();
+  await expect(image).toBeVisible();
+  expect(
+    await image.evaluate((element: HTMLImageElement) => element.naturalWidth),
+  ).toBeGreaterThan(0);
+  await page.screenshot({ path: testInfo.outputPath('bank-session.png') });
+  await page.getByRole('button', { name: /交卷并查看解析/ }).click();
+  await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible();
+  await expect(page.getByText('来源答案，未独立核验').first()).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.route('**/content/bank/manifest.json', (route) => route.abort());
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible();
 });
 
 test('存储不可用时显示错误并支持重试', async ({ page }) => {

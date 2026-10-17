@@ -5,9 +5,13 @@ import { initializeDatabase } from './initialize';
 import { CatalogRepository } from './catalog-repository';
 import { ContentRepository } from './content-repository';
 import { PracticeRepository } from './practice-repository';
-import { seedCatalog } from './seed';
-import { growthRateLesson, growthRateQuestions } from './growth-rate-content';
+import seedCatalog from '../content/catalog.json';
+import growthRateContent from '../content/growth-rate.json';
+import allCourses from '../content/all-courses.json';
 import { question, session, answerInput } from './test-fixtures';
+
+const growthRateLesson = growthRateContent.lessons[0]!;
+const growthRateQuestions = growthRateContent.questions;
 
 let db: LearningDatabase;
 let content: ContentRepository;
@@ -34,11 +38,17 @@ describe('本地目录与事务初始化', () => {
     await initializeDatabase(db);
     expect((await catalog.getCatalog()).modules).toHaveLength(6);
     expect(await db.knowledgePoints.count()).toBe(53);
-    expect(await db.lessons.count()).toBe(1);
+    expect(await db.lessons.count()).toBe(2 + allCourses.lessons.length);
+    expect((await db.lessons.get([growthRateLesson.id, 1]))?.version).toBe(1);
+    expect((await db.lessons.get([growthRateLesson.id, 2]))?.version).toBe(2);
     expect(growthRateQuestions).toHaveLength(5);
     expect(
-      await content.getTrainingQuestions('data-analysis-growth-rate'),
-    ).toHaveLength(5);
+      (await content.getTrainingQuestions('data-analysis-growth-rate')).map(
+        (item) => item.id,
+      ),
+    ).toEqual(
+      expect.arrayContaining(growthRateQuestions.map((item) => item.id)),
+    );
     expect(growthRateLesson.reviewStatus).toBe('verified');
     expect(await db.metadata.count()).toBe(1);
   });
@@ -161,7 +171,7 @@ describe('不可变内容版本与关联', () => {
         materialRef: { id: 'm1', version: 1 },
       }),
     ).rejects.toThrow('材料版本不存在');
-    expect(await db.questions.count()).toBe(5);
+    expect(await db.questions.count()).toBe(5 + allCourses.questions.length);
   });
   it('共享材料和课程版本保留，支持学习进度', async () => {
     const material = {
@@ -182,7 +192,7 @@ describe('不可变内容版本与关联', () => {
       id: 'q2',
       materialRef: { id: 'm1', version: 1 },
     });
-    expect(await db.materials.count()).toBe(1);
+    expect(await db.materials.count()).toBe(1 + allCourses.materials.length);
     await expect(
       content.addMaterialVersion({ ...material, bodyMarkdown: '覆盖' }),
     ).rejects.toThrow('不可覆盖');

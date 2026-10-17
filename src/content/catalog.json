@@ -1,0 +1,551 @@
+{
+  "examProfiles": [
+    {
+      "id": "hubei-xingce-2026",
+      "title": "湖北省考 · 行政职业能力测验",
+      "region": "湖北",
+      "year": 2026,
+      "outline": {
+        "kind": "official",
+        "title": "湖北省2026年度省市县乡考试录用公务员公共科目笔试考试大纲（政府网站转载）",
+        "url": "https://gdkfq.ezhou.gov.cn/gk/bmptlj/bm/qzsj/fdzdgk/zkly/202604/t20260417_761135.html",
+        "region": "湖北",
+        "year": 2026,
+        "license": {
+          "status": "unknown",
+          "description": "仅引用模块分类与来源链接；未复制官方例题，未推定题库使用授权。"
+        }
+      },
+      "checkedAt": "2026-10-14"
+    }
+  ],
+  "modules": [
+    {
+      "id": "politics",
+      "examProfileId": "hubei-xingce-2026",
+      "title": "政治理论",
+      "description": "理解理论，读懂政策，联系实际。",
+      "order": 0,
+      "classification": "official"
+    },
+    {
+      "id": "general",
+      "examProfileId": "hubei-xingce-2026",
+      "title": "常识判断",
+      "description": "建立法律、人文与科技的知识框架。",
+      "order": 1,
+      "classification": "official"
+    },
+    {
+      "id": "verbal",
+      "examProfileId": "hubei-xingce-2026",
+      "title": "言语理解与表达",
+      "description": "抓住文段重点，准确理解与表达。",
+      "order": 2,
+      "classification": "official"
+    },
+    {
+      "id": "quantitative",
+      "examProfileId": "hubei-xingce-2026",
+      "title": "数量关系",
+      "description": "把文字条件转化为可求解的数量关系。",
+      "order": 3,
+      "classification": "official"
+    },
+    {
+      "id": "reasoning",
+      "examProfileId": "hubei-xingce-2026",
+      "title": "判断推理",
+      "description": "识别规律，分析关系，建立逻辑链。",
+      "order": 4,
+      "classification": "official"
+    },
+    {
+      "id": "data-analysis",
+      "examProfileId": "hubei-xingce-2026",
+      "title": "资料分析",
+      "description": "读懂统计材料，掌握公式与速算方法。",
+      "order": 5,
+      "classification": "official"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "id": "politics-foundation",
+      "moduleId": "politics",
+      "parentId": null,
+      "title": "理论与政策",
+      "order": 0,
+      "kind": "category",
+      "classification": "teaching"
+    },
+    {
+      "id": "politics-basic-theory",
+      "moduleId": "politics",
+      "parentId": "politics-foundation",
+      "title": "基本政治理论",
+      "order": 0,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "politics-meetings-policy",
+      "moduleId": "politics",
+      "parentId": "politics-foundation",
+      "title": "重要会议与政策",
+      "order": 1,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "politics-theory-practice",
+      "moduleId": "politics",
+      "parentId": "politics-foundation",
+      "title": "理论联系实际",
+      "order": 2,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "politics-policy-application",
+      "moduleId": "politics",
+      "parentId": "politics-foundation",
+      "title": "政策理解与应用",
+      "order": 3,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "general-foundation",
+      "moduleId": "general",
+      "parentId": null,
+      "title": "综合常识",
+      "order": 0,
+      "kind": "category",
+      "classification": "teaching"
+    },
+    {
+      "id": "general-law",
+      "moduleId": "general",
+      "parentId": "general-foundation",
+      "title": "法律",
+      "order": 0,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "general-politics",
+      "moduleId": "general",
+      "parentId": "general-foundation",
+      "title": "政治",
+      "order": 1,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "general-economics",
+      "moduleId": "general",
+      "parentId": "general-foundation",
+      "title": "经济",
+      "order": 2,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "general-history",
+      "moduleId": "general",
+      "parentId": "general-foundation",
+      "title": "历史",
+      "order": 3,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "general-humanities",
+      "moduleId": "general",
+      "parentId": "general-foundation",
+      "title": "人文",
+      "order": 4,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "general-science",
+      "moduleId": "general",
+      "parentId": "general-foundation",
+      "title": "科技",
+      "order": 5,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "general-geography",
+      "moduleId": "general",
+      "parentId": "general-foundation",
+      "title": "地理",
+      "order": 6,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "general-national-context",
+      "moduleId": "general",
+      "parentId": "general-foundation",
+      "title": "国情",
+      "order": 7,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "verbal-foundation",
+      "moduleId": "verbal",
+      "parentId": null,
+      "title": "阅读与表达",
+      "order": 0,
+      "kind": "category",
+      "classification": "teaching"
+    },
+    {
+      "id": "verbal-cloze",
+      "moduleId": "verbal",
+      "parentId": "verbal-foundation",
+      "title": "逻辑填空",
+      "order": 0,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "verbal-main-idea",
+      "moduleId": "verbal",
+      "parentId": "verbal-foundation",
+      "title": "主旨概括",
+      "order": 1,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "verbal-intention",
+      "moduleId": "verbal",
+      "parentId": "verbal-foundation",
+      "title": "意图判断",
+      "order": 2,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "verbal-details",
+      "moduleId": "verbal",
+      "parentId": "verbal-foundation",
+      "title": "细节理解",
+      "order": 3,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "verbal-sentence-order",
+      "moduleId": "verbal",
+      "parentId": "verbal-foundation",
+      "title": "语句排序",
+      "order": 4,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "verbal-sentence-fill",
+      "moduleId": "verbal",
+      "parentId": "verbal-foundation",
+      "title": "语句填空",
+      "order": 5,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "verbal-passage",
+      "moduleId": "verbal",
+      "parentId": "verbal-foundation",
+      "title": "篇章阅读",
+      "order": 6,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "quantitative-foundation",
+      "moduleId": "quantitative",
+      "parentId": null,
+      "title": "数学运算",
+      "order": 0,
+      "kind": "category",
+      "classification": "teaching"
+    },
+    {
+      "id": "quantitative-arithmetic",
+      "moduleId": "quantitative",
+      "parentId": "quantitative-foundation",
+      "title": "基础运算",
+      "order": 0,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "quantitative-work",
+      "moduleId": "quantitative",
+      "parentId": "quantitative-foundation",
+      "title": "工程问题",
+      "order": 1,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "quantitative-travel",
+      "moduleId": "quantitative",
+      "parentId": "quantitative-foundation",
+      "title": "行程问题",
+      "order": 2,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "quantitative-profit",
+      "moduleId": "quantitative",
+      "parentId": "quantitative-foundation",
+      "title": "经济利润",
+      "order": 3,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "quantitative-permutations",
+      "moduleId": "quantitative",
+      "parentId": "quantitative-foundation",
+      "title": "排列组合",
+      "order": 4,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "quantitative-probability",
+      "moduleId": "quantitative",
+      "parentId": "quantitative-foundation",
+      "title": "概率",
+      "order": 5,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "quantitative-geometry",
+      "moduleId": "quantitative",
+      "parentId": "quantitative-foundation",
+      "title": "几何",
+      "order": 6,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "quantitative-inclusion-exclusion",
+      "moduleId": "quantitative",
+      "parentId": "quantitative-foundation",
+      "title": "容斥原理",
+      "order": 7,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "quantitative-sequences",
+      "moduleId": "quantitative",
+      "parentId": "quantitative-foundation",
+      "title": "数列与规律",
+      "order": 8,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "reasoning-foundation",
+      "moduleId": "reasoning",
+      "parentId": null,
+      "title": "推理基础",
+      "order": 0,
+      "kind": "category",
+      "classification": "teaching"
+    },
+    {
+      "id": "reasoning-figures",
+      "moduleId": "reasoning",
+      "parentId": "reasoning-foundation",
+      "title": "图形推理",
+      "order": 0,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "reasoning-definitions",
+      "moduleId": "reasoning",
+      "parentId": "reasoning-foundation",
+      "title": "定义判断",
+      "order": 1,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "reasoning-analogy",
+      "moduleId": "reasoning",
+      "parentId": "reasoning-foundation",
+      "title": "类比推理",
+      "order": 2,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "reasoning-logic",
+      "moduleId": "reasoning",
+      "parentId": "reasoning-foundation",
+      "title": "逻辑判断",
+      "order": 3,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "reasoning-strengthen-weaken",
+      "moduleId": "reasoning",
+      "parentId": "reasoning-foundation",
+      "title": "加强与削弱",
+      "order": 4,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "reasoning-premise-conclusion",
+      "moduleId": "reasoning",
+      "parentId": "reasoning-foundation",
+      "title": "前提与结论",
+      "order": 5,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "reasoning-translation",
+      "moduleId": "reasoning",
+      "parentId": "reasoning-foundation",
+      "title": "翻译推理",
+      "order": 6,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "reasoning-analytical",
+      "moduleId": "reasoning",
+      "parentId": "reasoning-foundation",
+      "title": "分析推理",
+      "order": 7,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-foundation",
+      "moduleId": "data-analysis",
+      "parentId": null,
+      "title": "统计与计算",
+      "order": 0,
+      "kind": "category",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-terms",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "基础统计术语",
+      "order": 0,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-current-base",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "现期量与基期量",
+      "order": 1,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-growth-rate",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "增长率",
+      "order": 2,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-growth-amount",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "增长量",
+      "order": 3,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-proportion",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "比重",
+      "order": 4,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-average",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "平均数",
+      "order": 5,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-multiple",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "倍数",
+      "order": 6,
+      "kind": "knowledge",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-truncated-division",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "截位直除",
+      "order": 7,
+      "kind": "method",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-estimation",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "估算",
+      "order": 8,
+      "kind": "method",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-difference",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "差分法",
+      "order": 9,
+      "kind": "method",
+      "classification": "teaching"
+    },
+    {
+      "id": "data-analysis-comprehensive",
+      "moduleId": "data-analysis",
+      "parentId": "data-analysis-foundation",
+      "title": "综合资料分析",
+      "order": 10,
+      "kind": "knowledge",
+      "classification": "teaching"
+    }
+  ]
+}
