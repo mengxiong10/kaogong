@@ -217,18 +217,14 @@ export function PracticeSessionPage() {
           {displayTime(totalTime)} · {saving ? '保存中' : '已保存'}
         </span>
       </div>
-      <p className="mt-4 text-[10px] tracking-[1.2px] text-muted-foreground">
-        {moduleTitle} /{' '}
-        {question.reviewStatus === 'source-provided' ? '真题' : '原创题'} · 单选
-      </p>
-      <h1 className="mt-1 text-[22px] font-semibold">
+      <h1 className="mt-3 text-[22px] font-semibold">
         第 {index + 1} 题{' '}
         <span className="text-sm font-normal text-muted-foreground">
           / {questions.length}
         </span>
       </h1>
       <p className="mt-2 text-xs text-muted-foreground">
-        已作答 {answered}/{questions.length} · 可跳过，交卷后统一查看解析
+        {moduleTitle} · 已作答 {answered}/{questions.length}
       </p>
       <nav className="mt-5 grid grid-cols-5 gap-2" aria-label="题号导航">
         {questions.map((item, itemIndex) => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Clock3 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCatalog } from '@/app/catalog-context';
 import { contentRepository, practiceRepository } from '@/data';
@@ -59,21 +59,13 @@ export function PracticeLandingPage() {
   const finished = sessions.filter((item) => item.status === 'completed');
   return (
     <div className="px-[22px] pt-[30px] pb-8">
-      <p className="mb-2 text-[10px] tracking-[1.2px] text-muted-foreground">
-        专项练习
-      </p>
       <h1 className="text-[26px] font-semibold">练习行测真题</h1>
       <p className="mt-3 text-[13px] leading-[1.8] text-muted-foreground">
-        交卷后统一看解析，刷新可继续作答。真题答案来自原题库，未经独立核验。
+        交卷后统一看解析。真题答案来自原题库，未经独立核验。
       </p>
-      <div className="mt-7 rounded-lg border border-border p-5">
-        <h2 className="text-base font-semibold">资料分析快捷练习</h2>
-        <p className="mt-2 text-xs leading-[1.8] text-muted-foreground">
-          私人题库已收录 {bankCount}
-          道单选题，保留原图和共享材料；优先练习湖北卷，再逐步覆盖其他地区。
-        </p>
+      <div className="mt-6">
         <Button
-          className="mt-5 min-h-11 w-full"
+          className="min-h-11 w-full"
           onClick={start}
           disabled={starting || bankCount === 0}
         >
@@ -83,9 +75,6 @@ export function PracticeLandingPage() {
       </div>
       <section className="mt-7">
         <h2 className="text-sm font-semibold">按模块练习</h2>
-        <p className="mt-2 text-xs leading-[1.8] text-muted-foreground">
-          首次进入模块时会导入该模块题目，进度保存在本机。
-        </p>
         <div className="mt-3 divide-y divide-border border-y border-border">
           {modules.map((module) => (
             <div
@@ -105,12 +94,6 @@ export function PracticeLandingPage() {
           ))}
         </div>
       </section>
-      <Link
-        to="/learn/data-analysis/data-analysis-growth-rate"
-        className="mt-3 flex min-h-11 items-center justify-center text-xs text-primary"
-      >
-        阅读增长率课程
-      </Link>
       {error && (
         <p role="alert" className="mt-4 text-xs text-destructive">
           {error}
@@ -147,8 +130,7 @@ export function PracticeLandingPage() {
                   className="flex min-h-14 items-center justify-between text-xs"
                   to={`/practice/result/${item.id}`}
                 >
-                  <span className="flex items-center gap-2">
-                    <Clock3 size={15} />
+                  <span>
                     {new Date(item.completedAt!).toLocaleString('zh-CN')}
                   </span>
                   <ArrowRight size={16} />

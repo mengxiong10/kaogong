@@ -265,7 +265,7 @@ test('从筛选结果批量重做，正确作答也保留待复习状态', async
 test('首次进入、模块导航、刷新与主题持久化', async ({ page }, testInfo) => {
   await page.goto('/');
   await expect(
-    page.getByRole('heading', { name: '从一个知识点开始。' }),
+    page.getByRole('heading', { name: '今天学什么？' }),
   ).toBeVisible();
   await expect(
     page.getByText('完成一套真题后，这里会显示你的学习数据。'),
@@ -355,7 +355,7 @@ test('大模块首次导入后可交卷并显示正确模块', async ({ page }) 
   test.setTimeout(60000);
   await page.goto('/practice');
   await page.getByRole('button', { name: '练习判断推理' }).click();
-  await expect(page.getByText('判断推理 / 真题 · 单选')).toBeVisible({
+  await expect(page.getByText(/判断推理 · 已作答/)).toBeVisible({
     timeout: 45000,
   });
   await page
@@ -368,7 +368,7 @@ test('大模块首次导入后可交卷并显示正确模块', async ({ page }) 
   await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible({
     timeout: 15000,
   });
-  await expect(page.getByText('判断推理 / 真题 · 已交卷')).toBeVisible();
+  await expect(page.getByText(/判断推理 · 真题 · 5 题/)).toBeVisible();
 });
 
 test('课程和练习入口统一使用真题，草稿恢复与交卷正常', async ({
@@ -435,9 +435,7 @@ test('课程和练习入口统一使用真题，草稿恢复与交卷正常', as
   await expect(
     page.getByText(/首次作答：\d\/2 题正确；重复作答：0\/0 题正确。/),
   ).toBeVisible();
-  await expect(
-    page.getByRole('heading', { name: '按难度看用时' }),
-  ).toBeVisible();
+  await expect(page.getByText('按难度看历史用时')).toBeVisible();
   await expect(page.getByText('未作答', { exact: true }).first()).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible();
@@ -509,7 +507,7 @@ test('存储不可用时显示错误并支持重试', async ({ page }) => {
   await page.evaluate(() => sessionStorage.setItem('allow-idb', 'yes'));
   await page.getByRole('button', { name: '重新尝试' }).click();
   await expect(
-    page.getByRole('heading', { name: '从一个知识点开始。' }),
+    page.getByRole('heading', { name: '今天学什么？' }),
   ).toBeVisible();
 });
 

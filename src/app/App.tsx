@@ -117,15 +117,13 @@ function AppShell() {
       <header className="flex items-center justify-between border-b border-border px-[22px] pt-[calc(17px+env(safe-area-inset-top))] pb-[17px]">
         <NavLink
           to="/"
-          className="flex min-h-11 items-center gap-2.5 text-base leading-[1.35] font-semibold [&_small]:mt-[3px] [&_small]:block [&_small]:text-[10px] [&_small]:font-normal [&_small]:tracking-[1px] [&_small]:text-muted-foreground"
+          className="flex min-h-11 items-center gap-2.5 text-base font-semibold"
           aria-label="湖北行测首页"
         >
           <span className="grid h-[39px] w-[35px] place-items-center rounded-[7px] border border-primary text-primary">
             <BookOpenCheck size={21} />
           </span>
-          <span>
-            湖北行测<small>个人学习工作台</small>
-          </span>
+          <span>湖北行测</span>
         </NavLink>
         <Button
           variant="ghost"

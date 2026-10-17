@@ -62,7 +62,7 @@ export function AnalyticsPage() {
       </Link>
       <h1 className="mt-3 text-2xl font-semibold">学习报告</h1>
       <p className="mt-2 text-xs leading-5 text-muted-foreground">
-        全部统计来自本机学习记录。上游真题答案未经独立核验，部分知识点为自动归类；数据仅供复习参考。
+        统计来自本机记录；真题答案和部分知识点归类未经核验。
       </p>
 
       <section className="mt-7" aria-labelledby="overview-title">
@@ -74,9 +74,6 @@ export function AnalyticsPage() {
             <p className="text-xs text-muted-foreground">累计完成题数</p>
             <p className="mt-1 text-xl font-semibold">
               {report.totalAnsweredQuestions}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              去重题目，未作答不计
             </p>
           </div>
           <div>
@@ -118,9 +115,6 @@ export function AnalyticsPage() {
             ).toLocaleDateString('zh-CN')}
           </p>
         )}
-        <p className="mt-1 text-xs text-muted-foreground">
-          未作答不计正确率；首次提交留空后再答，按重复作答计。
-        </p>
         <div className="mt-2">
           <ScoreLine label="首次作答" score={report.recent.first} />
           <ScoreLine label="重复作答" score={report.recent.repeat} />
@@ -137,7 +131,7 @@ export function AnalyticsPage() {
           模块与知识点
         </h2>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          按作答时的题目版本归类。主正确率仅统计首次作答；每行显示正确数/已答数，题量少时请结合原题判断。题目关联多个知识点时会分别计入。
+          按作答时的题目版本归类；正确率以已答题计算。
         </p>
         <div className="mt-3 space-y-3">
           {report.modules.map((module) => (

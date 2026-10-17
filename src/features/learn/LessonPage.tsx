@@ -99,16 +99,10 @@ export function LessonPage() {
         <ArrowLeft size={16} />
         {module.title}目录
       </Link>
-      <p className="mb-2 text-[10px] tracking-[1.2px] text-muted-foreground">
-        {module.title} / {point.title} · 课程 01
-      </p>
       <h1 className="text-[25px] leading-[1.4] font-semibold">
         {lesson.title}
       </h1>
-      <p className="mt-3 text-xs leading-[1.8] text-muted-foreground">
-        完成课程后可练习本知识点真题。来源答案未经独立核验。
-      </p>
-      <div className="mt-7 border-t border-border pt-1">
+      <div className="mt-5 border-t border-border pt-1">
         <MarkdownContent>{lesson.bodyMarkdown}</MarkdownContent>
       </div>
       {error && (

@@ -7,7 +7,7 @@ export function ModuleList() {
   const { modules, knowledgePoints } = useCatalog();
   return (
     <ul className="module-list" aria-label="行测六大模块">
-      {modules.map((module, index) => {
+      {modules.map((module) => {
         const Icon =
           moduleIcons[module.id as keyof typeof moduleIcons] ?? BookOpen;
         const count = knowledgePoints.filter(
@@ -27,15 +27,8 @@ export function ModuleList() {
                   {module.title}
                 </span>
                 <span className="mt-[3px] block text-[10px] text-muted-foreground">
-                  {count} 个知识点<span aria-hidden="true"> · </span>
-                  课程与真题练习已开放
+                  {count} 个知识点
                 </span>
-              </span>
-              <span
-                className="text-[10px] text-muted-foreground tabular-nums"
-                aria-hidden="true"
-              >
-                0{index + 1}
               </span>
               <ChevronRight
                 size={16}

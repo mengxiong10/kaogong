@@ -86,8 +86,7 @@ export function MistakeListPage() {
 
   return (
     <div className="px-[22px] pt-7 pb-10">
-      <p className="text-[10px] tracking-[1.2px] text-muted-foreground">复习</p>
-      <h1 className="mt-2 text-[26px] font-semibold">错题本</h1>
+      <h1 className="text-[26px] font-semibold">错题本</h1>
       <p className="mt-2 text-xs leading-[1.8] text-muted-foreground">
         {pendingCount} 道待复习。答对一次不会自动移除，掌握状态由你决定。
       </p>
@@ -167,10 +166,7 @@ export function MistakeListPage() {
         </p>
       ) : (
         <>
-          <div className="mt-5 flex items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">
-              共 {visible.length} 题
-            </p>
+          <div className="mt-5 flex justify-end">
             <Button
               disabled={starting}
               onClick={() =>
@@ -197,10 +193,7 @@ export function MistakeListPage() {
                     </p>
                     <p className="mt-2 text-[11px] text-muted-foreground">
                       答错 {item.incorrectCount} 次 · 最近错选{' '}
-                      {item.lastIncorrect.selectedOptionIds.join('、')} ·{' '}
-                      {new Date(item.lastIncorrect.answeredAt).toLocaleString(
-                        'zh-CN',
-                      )}
+                      {item.lastIncorrect.selectedOptionIds.join('、')}
                     </p>
                   </div>
                   <ArrowRight size={17} className="shrink-0" />

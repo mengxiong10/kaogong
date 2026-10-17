@@ -148,13 +148,9 @@ export function PracticeResultPage() {
         <ArrowLeft size={16} />
         练习列表
       </Link>
-      <p className="mt-3 text-[10px] tracking-[1.2px] text-muted-foreground">
-        {moduleTitle} / {isBank ? '真题' : '原创题'} · 已交卷
-      </p>
-      <h1 className="mt-1 text-[26px] font-semibold">练习结果</h1>
+      <h1 className="mt-3 text-[26px] font-semibold">练习结果</h1>
       <p className="mt-2 text-xs text-muted-foreground">
-        本套 {summary.total} 题，已答 {summary.answered}{' '}
-        题。正确率只以已答题为分母。
+        {moduleTitle} · {isBank ? '真题' : '原创题'} · {summary.total} 题
       </p>
       <div className="mt-6 grid grid-cols-3 gap-2 border-y border-border py-5 text-center [&_span]:text-[11px] [&_span]:text-muted-foreground [&_strong]:block [&_strong]:text-xl [&_strong]:font-semibold">
         <div>
@@ -189,7 +185,6 @@ export function PracticeResultPage() {
             : formatMs(summary.medianAnsweredMs)}
           。
         </p>
-        <p>本套结果只提供作答反馈；不同题目与多次练习才能观察能力趋势。</p>
       </div>
       {summary.incorrect > 0 && (
         <Button asChild variant="outline" className="mt-5 min-h-11 w-full">
@@ -198,17 +193,11 @@ export function PracticeResultPage() {
           </Link>
         </Button>
       )}
-      <section
-        className="mt-8 border-t border-border pt-6"
-        aria-labelledby="difficulty-title"
-      >
-        <h2 id="difficulty-title" className="text-base font-semibold">
-          按难度看用时
-        </h2>
-        <p className="mt-2 text-xs leading-[1.7] text-muted-foreground">
-          以下汇总本机练习历史。首次和重复分别统计；未答题不计入正确率和中位用时。
-        </p>
-        <div className="mt-4 space-y-3">
+      <details className="mt-7 border-y border-border py-3">
+        <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium">
+          按难度看历史用时
+        </summary>
+        <div className="mt-2 space-y-3 pb-2">
           {result.difficultyHistory.map((row) => (
             <div
               key={row.difficulty}
@@ -241,10 +230,7 @@ export function PracticeResultPage() {
             </div>
           ))}
         </div>
-        <p className="mt-3 text-xs leading-[1.7] text-muted-foreground">
-          同一题重复练习可能因记忆提速；需要更多不同题目和多次练习才能判断趋势。
-        </p>
-      </section>
+      </details>
       <h2 className="mt-8 mb-2 text-base font-semibold">逐题解析</h2>
       <ol className="space-y-4">
         {result.session.questionRefs.map((ref, index) => {
@@ -271,14 +257,14 @@ export function PracticeResultPage() {
                 </span>
               </div>
               {result.materials[question.id] && (
-                <div className="mt-3 rounded-md border border-border bg-muted/40 p-3">
-                  <p className="mb-2 text-xs font-semibold">
-                    共用资料 · 可横向滑动查看表格
-                  </p>
+                <details className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2">
+                  <summary className="min-h-11 cursor-pointer py-3 text-xs font-semibold">
+                    查看共用资料
+                  </summary>
                   <MarkdownContent>
                     {result.materials[question.id] ?? ''}
                   </MarkdownContent>
-                </div>
+                </details>
               )}
               <div className="mt-3">
                 <MarkdownContent>{question.stemMarkdown}</MarkdownContent>
