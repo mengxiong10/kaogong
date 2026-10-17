@@ -191,6 +191,13 @@ export function PracticeResultPage() {
         </p>
         <p>本套结果只提供作答反馈；不同题目与多次练习才能观察能力趋势。</p>
       </div>
+      {summary.incorrect > 0 && (
+        <Button asChild variant="outline" className="mt-5 min-h-11 w-full">
+          <Link to="/mistakes">
+            查看待复习错题 <ArrowRight />
+          </Link>
+        </Button>
+      )}
       <section
         className="mt-8 border-t border-border pt-6"
         aria-labelledby="difficulty-title"
@@ -326,6 +333,14 @@ export function PracticeResultPage() {
                   '知识点：增长率'
                 )}
               </p>
+              {record.outcome === 'incorrect' && (
+                <Link
+                  to={`/mistakes/${encodeURIComponent(question.id)}`}
+                  className="mt-3 inline-flex min-h-11 items-center gap-1 text-xs text-primary"
+                >
+                  查看这道错题 <ArrowRight size={15} />
+                </Link>
+              )}
             </li>
           );
         })}

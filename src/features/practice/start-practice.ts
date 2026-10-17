@@ -83,3 +83,37 @@ export async function startDataAnalysisPractice() {
     true,
   );
 }
+
+export async function startMistakePractice(questionIds: string[]) {
+  if (
+    questionIds.length < 1 ||
+    questionIds.length > 5 ||
+    new Set(questionIds).size !== questionIds.length
+  )
+    throw new Error('错题重做需要 1 至 5 道不同题目');
+  const states = await practiceRepository.getMistakeStates();
+  if (
+    questionIds.some((id) => !states.some((state) => state.questionId === id))
+  )
+    throw new Error('只能重做已记录的错题');
+  const questions = await Promise.all(
+    questionIds.map((id) => contentRepository.getLatestTrainingQuestion(id)),
+  );
+  if (questions.some((question) => !question))
+    throw new Error('部分错题没有可练习的版本');
+  const session = PracticeSessionSchema.parse({
+    id: crypto.randomUUID(),
+    questionRefs: questions.map((question) => ({
+      id: question!.id,
+      version: question!.version,
+    })),
+    status: 'active',
+    explanationMode: 'after-submit',
+    currentIndex: 0,
+    drafts: [],
+    startedAt: new Date().toISOString(),
+    completedAt: null,
+  });
+  await practiceRepository.createSession(session);
+  return session.id;
+}

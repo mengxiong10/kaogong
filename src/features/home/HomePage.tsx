@@ -1,10 +1,12 @@
-import { ArrowUpRight, BookOpen, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useCatalog } from '../../app/catalog-context';
-import { catalogRepository, practiceRepository } from '../../data';
+import {
+  formatAccuracy,
+  useAnalyticsReport,
+} from '../analytics/use-analytics-report';
 import { ModuleList } from '../learn/ModuleList';
 
 export function HomePage() {
@@ -12,30 +14,7 @@ export function HomePage() {
   const count = knowledgePoints.filter(
     (point) => point.kind !== 'category',
   ).length;
-  const [history, setHistory] = useState<
-    { answers: number; lessons: number } | 'loading' | 'error'
-  >('loading');
-  useEffect(() => {
-    let active = true;
-    Promise.all([
-      practiceRepository.getAnswers(),
-      catalogRepository.getLessonProgress(),
-    ])
-      .then(([answers, progress]) => {
-        if (active)
-          setHistory({
-            answers: answers.length,
-            lessons: progress.filter((entry) => entry.status !== 'not-started')
-              .length,
-          });
-      })
-      .catch(() => {
-        if (active) setHistory('error');
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const analytics = useAnalyticsReport();
   return (
     <div className="home-page px-[22px] pt-[30px] pb-[18px] [&>h1]:text-[26px] [&>h1]:leading-[1.45] [&>h1]:font-semibold [&>h1]:tracking-[-0.6px] [&>h1]:wrap-anywhere">
       <p className="mb-2.5 text-[10px] font-medium tracking-[1.4px] text-muted-foreground">
@@ -69,6 +48,73 @@ export function HomePage() {
           </Link>
         </Button>
       </section>
+      <section className="mt-7" aria-labelledby="learning-title">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 id="learning-title" className="text-[15px] font-semibold">
+            学习概况
+          </h2>
+          <Link
+            to="/analytics"
+            className="inline-flex min-h-11 items-center gap-1 text-xs text-primary"
+          >
+            详细报告 <ChevronRight size={14} />
+          </Link>
+        </div>
+        {analytics.status === 'loading' && (
+          <p role="status" className="py-4 text-sm">
+            正在读取学习记录…
+          </p>
+        )}
+        {analytics.status === 'error' && (
+          <p role="alert" className="py-4 text-sm">
+            学习记录暂时无法读取，请刷新后重试。
+          </p>
+        )}
+        {analytics.status === 'ready' && (
+          <>
+            <div className="grid grid-cols-3 gap-2 border-y border-border py-4">
+              <div>
+                <p className="text-[10px] text-muted-foreground">
+                  近期首次正确率
+                </p>
+                <p className="mt-2 text-xl font-semibold">
+                  {formatAccuracy(analytics.report.recent.first.accuracy)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground">待复习错题</p>
+                <p className="mt-2 text-xl font-semibold">
+                  {analytics.report.pendingMistakes}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground">已完成课程</p>
+                <p className="mt-2 text-xl font-semibold">
+                  {analytics.report.lessons.completed}
+                  <span className="text-xs font-normal text-muted-foreground">
+                    /{analytics.report.lessons.total}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
+              近期按最近 {analytics.report.recent.sessions.length}{' '}
+              套已完成练习计算；未作答不计正确率，重做单独统计。
+            </p>
+            {analytics.report.recent.sessions.length === 0 && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                完成一套真题后，这里会显示你的学习数据。
+              </p>
+            )}
+            <Link
+              to="/mistakes"
+              className="mt-3 flex min-h-11 items-center justify-between text-xs text-primary"
+            >
+              查看待复习错题 <ChevronRight size={15} />
+            </Link>
+          </>
+        )}
+      </section>
       <section aria-labelledby="modules-title">
         <div className="mt-[29px] mb-[7px] flex items-center justify-between [&>h2]:text-[15px] [&>h2]:font-semibold">
           <h2 id="modules-title">学习地图</h2>
@@ -81,32 +127,6 @@ export function HomePage() {
           </Link>
         </div>
         <ModuleList />
-      </section>
-      <section
-        className="mt-[29px] flex items-start gap-3.5 text-muted-foreground [&_h2]:text-[13px] [&_h2]:font-medium [&_h2]:text-foreground [&_p]:mt-[5px] [&_p]:text-[11px] [&_p]:leading-[1.8] [&>svg]:mt-[3px] [&>svg]:shrink-0"
-        aria-labelledby="learning-title"
-      >
-        <BookOpen size={24} strokeWidth={1.5} />
-        <div>
-          {history === 'loading' ? (
-            <p role="status">正在读取学习记录…</p>
-          ) : history === 'error' ? (
-            <p role="alert">学习记录暂时无法读取，请刷新后重试。</p>
-          ) : history.answers === 0 && history.lessons === 0 ? (
-            <>
-              <h2 id="learning-title">还没有学习记录</h2>
-              <p>从任一知识点课程和真题练习开始，这里会记录你的学习足迹。</p>
-            </>
-          ) : (
-            <>
-              <h2 id="learning-title">学习记录已保存在本地</h2>
-              <p>
-                {history.answers} 条作答记录 · {history.lessons}{' '}
-                节课程留下学习进度
-              </p>
-            </>
-          )}
-        </div>
       </section>
       <p className="mt-[34px] text-center text-[10px] text-muted-foreground">
         为专注学习而设计 · 当前浏览器本地保存

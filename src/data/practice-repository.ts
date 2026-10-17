@@ -4,6 +4,7 @@ import {
   AnswerRecordSchema,
   MistakeStateSchema,
   type AnswerRecord,
+  type MistakeState,
 } from '../domain/learning';
 import { gradeSelection } from '../domain/grading';
 import { TimestampSchema } from '../domain/common';
@@ -18,6 +19,14 @@ import {
   type Question,
 } from '../domain/questions';
 import type { LearningDatabase } from './database';
+
+export type MistakeReviewItem = {
+  state: MistakeState;
+  question: Question;
+  lastIncorrect: AnswerRecord;
+  incorrectCount: number;
+  history: AnswerRecord[];
+};
 
 export class PracticeRepository {
   constructor(private readonly db: LearningDatabase) {}
@@ -122,6 +131,72 @@ export class PracticeRepository {
       .sort((a, b) => a.questionId.localeCompare(b.questionId));
   }
 
+  async getMistakeReviewItems(): Promise<MistakeReviewItem[]> {
+    const [states, answers] = await Promise.all([
+      this.getMistakeStates(),
+      this.getAnswers(),
+    ]);
+    const byQuestion = new Map<string, AnswerRecord[]>();
+    for (const answer of answers) {
+      const history = byQuestion.get(answer.questionRef.id) ?? [];
+      history.push(answer);
+      byQuestion.set(answer.questionRef.id, history);
+    }
+    const items = await Promise.all(
+      states.map(async (state) => {
+        const history = (byQuestion.get(state.questionId) ?? []).sort(
+          (a, b) => a.attemptNumber - b.attemptNumber,
+        );
+        const incorrect = history.filter(
+          (answer) => answer.outcome === 'incorrect',
+        );
+        const lastIncorrect = incorrect.at(-1);
+        if (!lastIncorrect) throw new Error('错题缺少答错记录');
+        const question = QuestionSchema.parse(
+          await this.db.questions.get([
+            lastIncorrect.questionRef.id,
+            lastIncorrect.questionRef.version,
+          ]),
+        );
+        return {
+          state,
+          question,
+          lastIncorrect,
+          incorrectCount: incorrect.length,
+          history,
+        };
+      }),
+    );
+    return items.sort(
+      (a, b) =>
+        b.lastIncorrect.answeredAt.localeCompare(a.lastIncorrect.answeredAt) ||
+        a.state.questionId.localeCompare(b.state.questionId),
+    );
+  }
+
+  async updateMistakeState(
+    questionId: string,
+    change: {
+      status?: MistakeState['status'];
+      reason?: MistakeState['reason'];
+    },
+    updatedAt: string,
+  ): Promise<MistakeState> {
+    const id = IdSchema.parse(questionId);
+    const timestamp = TimestampSchema.parse(updatedAt);
+    return this.db.transaction('rw', this.db.mistakes, async () => {
+      const previous = this.db.mistakes.get(id);
+      const state = MistakeStateSchema.parse(await previous);
+      const next = MistakeStateSchema.parse({
+        ...state,
+        ...change,
+        updatedAt: timestamp,
+      });
+      await this.db.mistakes.put(next);
+      return next;
+    });
+  }
+
   async submitSession(
     id: string,
     completedAt: string,
@@ -177,12 +252,11 @@ export class PracticeRepository {
           });
           await this.db.answers.add(record);
           if (record.outcome === 'incorrect') {
-            const previous = await this.db.mistakes.get(ref.id);
             await this.db.mistakes.put(
               MistakeStateSchema.parse({
                 questionId: ref.id,
                 status: 'pending',
-                reason: previous?.reason ?? null,
+                reason: null,
                 updatedAt: timestamp,
               }),
             );

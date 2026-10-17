@@ -2,6 +2,7 @@ import { LearningDatabase } from './database';
 import { CatalogRepository } from './catalog-repository';
 import { ContentRepository } from './content-repository';
 import { PracticeRepository } from './practice-repository';
+import { AnalyticsRepository } from './analytics-repository';
 import { initializeDatabase } from './initialize';
 import {
   hasPrivateBank,
@@ -20,6 +21,7 @@ const database = new LearningDatabase();
 export const catalogRepository = new CatalogRepository(database);
 export const contentRepository = new ContentRepository(database);
 export const practiceRepository = new PracticeRepository(database);
+export const analyticsRepository = new AnalyticsRepository(database);
 export async function initializeLocalData() {
   await initializeDatabase(database);
   const root = `${import.meta.env.BASE_URL}content/bank/`;

@@ -13,6 +13,7 @@ import {
   Sun,
   BookOpenCheck,
   PencilLine,
+  BookMarked,
 } from 'lucide-react';
 import { catalogRepository, initializeLocalData } from '../data';
 import type { CatalogView } from '../domain/validate-catalog';
@@ -42,6 +43,21 @@ const PracticeSessionPage = lazy(() =>
 const PracticeResultPage = lazy(() =>
   import('../features/practice/PracticeResultPage').then((module) => ({
     default: module.PracticeResultPage,
+  })),
+);
+const MistakeListPage = lazy(() =>
+  import('../features/mistakes/MistakeListPage').then((module) => ({
+    default: module.MistakeListPage,
+  })),
+);
+const MistakeDetailPage = lazy(() =>
+  import('../features/mistakes/MistakeDetailPage').then((module) => ({
+    default: module.MistakeDetailPage,
+  })),
+);
+const AnalyticsPage = lazy(() =>
+  import('../features/analytics/AnalyticsPage').then((module) => ({
+    default: module.AnalyticsPage,
   })),
 );
 
@@ -159,6 +175,7 @@ function AppShell() {
             >
               <Routes>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="/learn" element={<KnowledgePage />} />
                 <Route path="/learn/:moduleId" element={<ModulePage />} />
                 <Route
@@ -166,6 +183,11 @@ function AppShell() {
                   element={<LessonPage />}
                 />
                 <Route path="/practice" element={<PracticeLandingPage />} />
+                <Route path="/mistakes" element={<MistakeListPage />} />
+                <Route
+                  path="/mistakes/:questionId"
+                  element={<MistakeDetailPage />}
+                />
                 <Route
                   path="/practice/session/:sessionId"
                   element={<PracticeSessionPage />}
@@ -181,7 +203,7 @@ function AppShell() {
         )}
       </main>
       <nav
-        className="fixed bottom-0 left-1/2 z-10 grid w-full max-w-[480px] -translate-x-1/2 grid-cols-3 border-t border-border bg-background px-[18px] pt-[7px] pb-[calc(7px+env(safe-area-inset-bottom))] [&>a]:flex [&>a]:min-h-[51px] [&>a]:flex-col [&>a]:items-center [&>a]:justify-center [&>a]:gap-[3px] [&>a]:rounded-[5px] [&>a]:text-[10px] [&>a]:text-muted-foreground [&>a.active]:font-semibold [&>a.active]:text-primary"
+        className="fixed bottom-0 left-1/2 z-10 grid w-full max-w-[480px] -translate-x-1/2 grid-cols-4 border-t border-border bg-background px-[12px] pt-[7px] pb-[calc(7px+env(safe-area-inset-bottom))] [&>a]:flex [&>a]:min-h-[51px] [&>a]:flex-col [&>a]:items-center [&>a]:justify-center [&>a]:gap-[3px] [&>a]:rounded-[5px] [&>a]:text-[10px] [&>a]:text-muted-foreground [&>a.active]:font-semibold [&>a.active]:text-primary"
         aria-label="主导航"
       >
         <NavLink to="/" end>
@@ -195,6 +217,10 @@ function AppShell() {
         <NavLink to="/practice">
           <PencilLine size={21} />
           <span>专项练习</span>
+        </NavLink>
+        <NavLink to="/mistakes">
+          <BookMarked size={21} />
+          <span>错题本</span>
         </NavLink>
       </nav>
     </div>

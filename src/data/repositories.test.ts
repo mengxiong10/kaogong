@@ -391,6 +391,133 @@ describe('会话恢复与追加历史', () => {
 });
 
 describe('整套交卷', () => {
+  it('错题原因、掌握和跨版本重做保留历史；再次答错重置原因', async () => {
+    await addTrainingSession();
+    await practice.saveSession({
+      ...session,
+      drafts: [
+        {
+          questionRef: session.questionRefs[0],
+          selectedOptionIds: ['B'],
+          uncertain: false,
+          elapsedMs: 1000,
+        },
+      ],
+    });
+    const first = await practice.submitSession('s1', answerInput.answeredAt);
+    expect(first[0]?.outcome).toBe('incorrect');
+    expect((await practice.getMistakeReviewItems())[0]).toMatchObject({
+      incorrectCount: 1,
+      question: { version: 1 },
+      lastIncorrect: { selectedOptionIds: ['B'] },
+    });
+    const markedAt = '2026-10-14T10:02:00.000Z';
+    await practice.updateMistakeState('q1', { reason: 'reading' }, markedAt);
+    await practice.updateMistakeState(
+      'q1',
+      { status: 'mastered' },
+      '2026-10-14T10:03:00.000Z',
+    );
+    expect((await practice.getMistakeStates())[0]).toMatchObject({
+      status: 'mastered',
+      reason: 'reading',
+    });
+    await content.addQuestionVersion({ ...question, version: 2 });
+    expect((await content.getLatestTrainingQuestion('q1'))?.version).toBe(2);
+    await practice.createSession({
+      ...session,
+      id: 's2',
+      startedAt: '2026-10-14T10:04:00.000Z',
+      questionRefs: [{ id: 'q1', version: 2 }],
+    });
+    await practice.saveSession({
+      ...session,
+      id: 's2',
+      startedAt: '2026-10-14T10:04:00.000Z',
+      questionRefs: [{ id: 'q1', version: 2 }],
+      drafts: [
+        {
+          questionRef: { id: 'q1', version: 2 },
+          selectedOptionIds: ['A'],
+          uncertain: false,
+          elapsedMs: 800,
+        },
+      ],
+    });
+    await practice.submitSession('s2', '2026-10-14T10:05:00.000Z');
+    expect((await practice.getMistakeStates())[0]?.status).toBe('mastered');
+    expect((await practice.getMistakeReviewItems())[0]).toMatchObject({
+      question: { version: 1 },
+      history: [
+        { questionRef: { version: 1 } },
+        { questionRef: { version: 2 } },
+      ],
+    });
+    await practice.createSession({
+      ...session,
+      id: 's3',
+      startedAt: '2026-10-14T10:06:00.000Z',
+      questionRefs: [{ id: 'q1', version: 2 }],
+    });
+    await practice.saveSession({
+      ...session,
+      id: 's3',
+      startedAt: '2026-10-14T10:06:00.000Z',
+      questionRefs: [{ id: 'q1', version: 2 }],
+      drafts: [
+        {
+          questionRef: { id: 'q1', version: 2 },
+          selectedOptionIds: ['B'],
+          uncertain: false,
+          elapsedMs: 900,
+        },
+      ],
+    });
+    await practice.submitSession('s3', '2026-10-14T10:07:00.000Z');
+    expect((await practice.getMistakeReviewItems())[0]).toMatchObject({
+      incorrectCount: 2,
+      question: { version: 2 },
+      state: { status: 'pending', reason: null },
+    });
+    expect(await practice.getAnswers()).toHaveLength(3);
+  });
+
+  it('错题状态写入失败可重试，历史与状态不被部分覆盖', async () => {
+    await addTrainingSession();
+    await practice.saveSession({
+      ...session,
+      drafts: [
+        {
+          questionRef: session.questionRefs[0],
+          selectedOptionIds: ['B'],
+          uncertain: false,
+          elapsedMs: 100,
+        },
+      ],
+    });
+    await practice.submitSession('s1', answerInput.answeredAt);
+    const hook = () => {
+      throw new Error('模拟状态写入故障');
+    };
+    db.mistakes.hook('updating', hook);
+    await expect(
+      practice.updateMistakeState(
+        'q1',
+        { reason: 'formula' },
+        '2026-10-14T10:02:00.000Z',
+      ),
+    ).rejects.toThrow('模拟状态写入故障');
+    expect((await practice.getMistakeStates())[0]?.reason).toBeNull();
+    expect(await practice.getAnswers()).toHaveLength(1);
+    db.mistakes.hook('updating').unsubscribe(hook);
+    await practice.updateMistakeState(
+      'q1',
+      { reason: 'formula' },
+      '2026-10-14T10:02:00.000Z',
+    );
+    expect((await practice.getMistakeStates())[0]?.reason).toBe('formula');
+  });
+
   it.each(['全对', '全错'] as const)(
     '%s时五题均有独立历史记录',
     async (scenario) => {

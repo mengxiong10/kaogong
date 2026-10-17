@@ -79,6 +79,23 @@ export class ContentRepository {
     return row ? QuestionSchema.parse(row) : undefined;
   }
 
+  async getLatestTrainingQuestion(id: string) {
+    const rows = await this.db.questions
+      .where('id')
+      .equals(ContentRefSchema.shape.id.parse(id))
+      .toArray();
+    for (const row of rows.sort((a, b) => b.version - a.version)) {
+      const question = QuestionSchema.parse(row);
+      if (!isTrainingContentEligible(question)) continue;
+      if (question.materialRef) {
+        const material = await this.getMaterial(question.materialRef);
+        if (!material || !isTrainingContentEligible(material)) continue;
+      }
+      return question;
+    }
+    return undefined;
+  }
+
   async getTrainingQuestions(knowledgePointId: string) {
     const id = ContentRefSchema.shape.id.parse(knowledgePointId);
     const rows = await this.db.questions

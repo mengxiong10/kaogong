@@ -1,11 +1,198 @@
 import { expect, test } from '@playwright/test';
 
+test('首页学习概况和详细报告使用真实作答记录', async ({ page }, testInfo) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: '学习概况' })).toBeVisible();
+  await expect(page.getByText('近期首次正确率')).toBeVisible();
+  await page.getByRole('link', { name: '详细报告' }).click();
+  await expect(page.getByRole('heading', { name: '学习报告' })).toBeVisible();
+  await expect(
+    page.getByText('暂无已完成练习。', { exact: false }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: '返回首页' }).click();
+  await page.getByRole('link', { name: '专项练习' }).click();
+  await page.getByRole('button', { name: '开始练习真题' }).click();
+  await expect(
+    page.getByRole('heading', { level: 1, name: /第 1 题/ }),
+  ).toBeVisible();
+  const correct = await optionIndex(page, true);
+  await page
+    .getByRole('group', { name: '选择答案' })
+    .getByRole('button')
+    .nth(correct)
+    .click();
+  await expect(page.getByText(/已保存/)).toBeVisible();
+  await page.getByRole('button', { name: /交卷并查看解析/ }).click();
+  await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible({
+    timeout: 15000,
+  });
+  await page.getByRole('link', { name: '首页', exact: true }).click();
+  await expect(page.getByText('100%', { exact: true })).toBeVisible();
+  await page.getByRole('link', { name: '详细报告' }).click();
+  await expect(
+    page.getByRole('heading', { name: '最近 1 套练习' }),
+  ).toBeVisible();
+  await expect(page.getByRole('link', { name: /资料分析 ·/ })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: testInfo.outputPath('analytics.png'),
+    fullPage: true,
+  });
+});
+
+async function optionIndex(
+  page: import('@playwright/test').Page,
+  correct = false,
+) {
+  return page.evaluate(async (wantedCorrect) => {
+    const request = indexedDB.open('kaogong-learning');
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const sessionId = location.pathname.split('/').at(-1)!;
+    const session = await new Promise<{
+      questionRefs: { id: string; version: number }[];
+    }>((resolve, reject) => {
+      const query = db
+        .transaction('sessions')
+        .objectStore('sessions')
+        .get(sessionId);
+      query.onsuccess = () => resolve(query.result);
+      query.onerror = () => reject(query.error);
+    });
+    const ref = session.questionRefs[0]!;
+    const question = await new Promise<{
+      options: { id: string }[];
+      correctOptionIds: string[];
+    }>((resolve, reject) => {
+      const query = db
+        .transaction('questions')
+        .objectStore('questions')
+        .get([ref.id, ref.version]);
+      query.onsuccess = () => resolve(query.result);
+      query.onerror = () => reject(query.error);
+    });
+    db.close();
+    return question.options.findIndex(
+      (option) =>
+        question.correctOptionIds.includes(option.id) === wantedCorrect,
+    );
+  }, correct);
+}
+
+test('错题筛选、原因、掌握、重做和再次答错恢复待复习', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/practice');
+  await page.getByRole('button', { name: '开始练习真题' }).click();
+  await expect(
+    page.getByRole('heading', { level: 1, name: /第 1 题/ }),
+  ).toBeVisible();
+  const wrong = await optionIndex(page);
+  expect(wrong).toBeGreaterThanOrEqual(0);
+  await page
+    .getByRole('group', { name: '选择答案' })
+    .getByRole('button')
+    .nth(wrong)
+    .click();
+  await expect(page.getByText(/已保存/)).toBeVisible();
+  await page.getByRole('button', { name: /交卷并查看解析/ }).click();
+  await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible({
+    timeout: 15000,
+  });
+  await page.getByRole('link', { name: '查看待复习错题' }).click();
+  await expect(page.getByRole('heading', { name: '错题本' })).toBeVisible();
+  await expect(page.getByText('1 道待复习。', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: '资料分析', exact: true }).click();
+  await page.getByRole('button', { name: '综合资料分析' }).click();
+  await expect(page.getByText('答错 1 次')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('mistake-list.png') });
+  await page.locator('a[href^="/mistakes/"]').last().click();
+  await expect(page.getByRole('heading', { name: '错题详情' })).toBeVisible();
+  await expect(page.getByText('共用资料 · 可横向滑动查看表格')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('mistake-detail.png') });
+  await page.getByRole('button', { name: '审题错误' }).click();
+  await expect(page.getByRole('button', { name: '审题错误' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByRole('button', { name: '标记已掌握' }).click();
+  await page.reload();
+  await expect(
+    page.getByRole('button', { name: '重新标记待复习' }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: '错题本' }).first().click();
+  await expect(page.getByText('0 道待复习。', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: '已掌握' }).click();
+  await expect(page.getByText('答错 1 次')).toBeVisible();
+  await page.locator('a[href^="/mistakes/"]').last().click();
+  await page.getByRole('button', { name: '重做这道题' }).click();
+  await expect(
+    page.getByRole('heading', { level: 1, name: /第 1 题/ }),
+  ).toBeVisible();
+  await page
+    .getByRole('group', { name: '选择答案' })
+    .getByRole('button')
+    .nth(await optionIndex(page))
+    .click();
+  await expect(page.getByText(/已保存/)).toBeVisible();
+  await page.getByRole('button', { name: /交卷并查看解析/ }).click();
+  await page.getByRole('link', { name: '查看待复习错题' }).click();
+  await expect(page.getByText('1 道待复习。', { exact: false })).toBeVisible();
+  await page.locator('a[href^="/mistakes/"]').last().click();
+  await expect(page.getByText('答错 2 次')).toBeVisible();
+  await expect(page.getByRole('button', { name: '暂不填写' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test('从筛选结果批量重做，正确作答也保留待复习状态', async ({ page }) => {
+  await page.goto('/practice');
+  await page.getByRole('button', { name: '开始练习真题' }).click();
+  await expect(page.getByRole('group', { name: '选择答案' })).toBeVisible();
+  await page
+    .getByRole('group', { name: '选择答案' })
+    .getByRole('button')
+    .nth(await optionIndex(page))
+    .click();
+  await expect(page.getByText(/已保存/)).toBeVisible();
+  await page.getByRole('button', { name: /交卷并查看解析/ }).click();
+  await page.getByRole('link', { name: '查看待复习错题' }).click();
+  await page.getByRole('button', { name: '重做前 1 题' }).click();
+  await expect(
+    page.getByRole('heading', { level: 1, name: /第 1 题/ }),
+  ).toBeVisible();
+  await page
+    .getByRole('group', { name: '选择答案' })
+    .getByRole('button')
+    .nth(await optionIndex(page, true))
+    .click();
+  await expect(page.getByText(/已保存/)).toBeVisible();
+  await page.getByRole('button', { name: /交卷并查看解析/ }).click();
+  await expect(page.getByText('第 2 次作答')).toBeVisible();
+  await page.getByRole('link', { name: '错题本' }).click();
+  await expect(page.getByText('1 道待复习。', { exact: false })).toBeVisible();
+});
+
 test('首次进入、模块导航、刷新与主题持久化', async ({ page }, testInfo) => {
   await page.goto('/');
   await expect(
     page.getByRole('heading', { name: '从一个知识点开始。' }),
   ).toBeVisible();
-  await expect(page.getByText('还没有学习记录', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('完成一套真题后，这里会显示你的学习数据。'),
+  ).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('home-light.png') });
   await page.getByRole('link', { name: '浏览知识体系' }).click();
   await expect(

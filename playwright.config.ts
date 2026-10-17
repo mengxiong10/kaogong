@@ -3,6 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
+  workers: 2,
   use: { baseURL: 'http://127.0.0.1:4187', trace: 'retain-on-failure' },
   projects: [360, 390, 430].map((width) => ({
     name: `mobile-${width}`,
