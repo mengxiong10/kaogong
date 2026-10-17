@@ -2,7 +2,7 @@
 
 ## 当前边界
 
-仅移动端、个人使用、Local-first，无登录及远程服务器。当前开放首页学习概况、详细学习报告、知识体系、47 个知识点课程、六模块私人真题练习与错题本。宽屏沿用最大 480px 的移动布局。应用本身没有访问控制，包含私人题库的构建产物只能放在本人可访问的环境中。
+仅移动端、Local-first，无登录及远程服务器。当前开放首页学习概况、详细学习报告、知识体系、47 个知识点课程、六模块真题练习与错题本。宽屏沿用最大 480px 的移动布局。应用本身没有访问控制；2026-10-17 用户确认拥有内容公开发布所需授权并要求部署，项目未独立核验授权凭据。
 
 ## 分层与数据流
 
@@ -33,7 +33,7 @@
 | AnswerRecord     | id → sessionId / questionRef                    | 追加历史；同会话同题唯一；校验结果与冻结版本一致            |
 | MistakeState     | questionId                                      | 复习状态、错误原因；错误次数和最近错误答案由作答历史计算    |
 
-课程、题目和材料分别保存来源、地区、年份、许可状态、内容版本、审核状态。许可状态为 unknown / permitted / restricted；审核状态为 draft / reviewed / verified / source-provided / source-derived。两者不互相推导。原创内容仍须 verified 且 permitted。私人题库的题目及材料标记为 source-provided、third-party、unknown，表示仅信任上游给出的答案，未经独立核验；它们可在当前私人应用中创建训练会话，不会被改标为 verified 或 permitted。依据上游题目和解析整理的新课程标记为 source-derived、ai-assisted、unknown，直接在私人应用中展示，但不冒称已核验或取得再分发许可。
+课程、题目和材料分别保存来源、地区、年份、许可状态、内容版本、审核状态。许可状态为 unknown / permitted / restricted；审核状态为 draft / reviewed / verified / source-provided / source-derived。两者不互相推导。原创内容仍须 verified 且 permitted。来源题库的题目及材料标记为 source-provided、third-party、unknown，表示仅信任上游给出的答案，未经独立核验；它们可创建训练会话，不会因用户确认公开发布授权而被改标为 verified 或 permitted。依据上游题目和解析整理的新课程标记为 source-derived、ai-assisted、unknown，不冒称答案或原始来源许可已核验。
 
 ## 存储与接口
 

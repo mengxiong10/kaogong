@@ -15,7 +15,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "content:check": "node content-pipeline/check-bank.mjs && node content-pipeline/check-all-bank.mjs",
-    "build": "pnpm typecheck && vite build",
+    "build": "pnpm typecheck && vite build && node scripts/build-pwa.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm content:check && pnpm test && pnpm build && pnpm test:e2e",
     "lint": "eslint . --max-warnings 0",

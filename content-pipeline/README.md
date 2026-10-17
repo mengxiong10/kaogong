@@ -13,7 +13,7 @@
 | review    | 人工审核记录；审核通过与答案验证分开记录                   |
 | output    | 按发布范围生成版本化内容包，并记录来源、许可与校验状态     |
 
-当前私人题库是上述通用流程的特例：输出位置为 `public/content/bank/`，来源许可保持 `unknown`，审核状态为 `source-provided`。这表示答案由来源提供、未经独立核验，仅可在本人可访问的应用中使用，不能当作已获许可或已验证内容公开发布。`content-pipeline/output/report.json` 记录生成数量，临时图片清单不入库。
+当前题库是上述通用流程的特例：输出位置为 `public/content/bank/`，来源许可保持 `unknown`，审核状态为 `source-provided`。答案由来源提供、未经独立核验。2026-10-17 用户确认拥有公开发布所需授权并要求部署；项目未独立核验授权凭据，故不将来源许可或答案审核状态改为已验证。`content-pipeline/output/report.json` 记录生成数量，临时图片清单不入库。
 
 ## 复现首批私人题库
 
