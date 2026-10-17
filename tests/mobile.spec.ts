@@ -121,6 +121,35 @@ test('首页学习概况和详细报告使用真实作答记录', async ({ page 
   });
 });
 
+test('首页推荐未完成课程并独立保留继续作答', async ({ page }) => {
+  await page.goto('/');
+  const suggestion = page.getByRole('region', { name: '今日学习建议' });
+  const first = suggestion.getByRole('heading', { level: 2 });
+  const firstTitle = await first.textContent();
+  await suggestion.getByRole('link', { name: '学习这节课程' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(firstTitle!);
+  await page.getByRole('link', { name: '首页', exact: true }).click();
+  await expect(first).toHaveText(firstTitle!);
+  await suggestion.getByRole('link', { name: '学习这节课程' }).click();
+  await page.getByRole('button', { name: '标记课程已学完' }).click();
+  await expect(page.getByRole('button', { name: '已完成课程' })).toBeVisible();
+  await page.getByRole('link', { name: '首页', exact: true }).click();
+  await expect(first).not.toHaveText(firstTitle!);
+
+  await page.getByRole('link', { name: '专项练习' }).click();
+  await page.getByRole('button', { name: '开始练习真题' }).click();
+  await expect(
+    page.getByRole('heading', { level: 1, name: /第 1 题/ }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: '首页', exact: true }).click();
+  await expect(
+    suggestion.getByRole('link', { name: /继续作答 · 第 1\/5 题/ }),
+  ).toBeVisible();
+  await expect(
+    suggestion.getByRole('link', { name: '学习这节课程' }),
+  ).toBeVisible();
+});
+
 async function optionIndex(
   page: import('@playwright/test').Page,
   correct = false,

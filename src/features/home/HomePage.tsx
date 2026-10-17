@@ -1,5 +1,8 @@
-import { ChevronRight, Download } from 'lucide-react';
+import { ArrowRight, ChevronRight, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCatalog } from '@/app/catalog-context';
+import { Button } from '@/components/ui/button';
+import { recommendToday } from '@/domain/today-recommendation';
 import {
   formatAccuracy,
   useAnalyticsReport,
@@ -7,10 +10,54 @@ import {
 import { ModuleList } from '../learn/ModuleList';
 
 export function HomePage() {
+  const catalog = useCatalog();
   const analytics = useAnalyticsReport();
+  const recommendation =
+    analytics.status === 'ready'
+      ? recommendToday(catalog, analytics.snapshot)
+      : null;
   return (
     <div className="px-[22px] pt-[28px] pb-[18px]">
       <h1 className="text-[26px] font-semibold">今天学什么？</h1>
+      <section className="mt-5" aria-label="今日学习建议">
+        {analytics.status === 'loading' && (
+          <p role="status" className="py-4 text-sm">
+            正在准备今日建议…
+          </p>
+        )}
+        {analytics.status === 'error' && (
+          <p role="alert" className="py-4 text-sm">
+            学习记录暂时无法读取，请刷新后重试。
+          </p>
+        )}
+        {recommendation && (
+          <div className="border-y border-border py-5">
+            <p className="text-xs text-muted-foreground">
+              {recommendation.detail}
+            </p>
+            <h2 className="mt-2 text-lg font-semibold wrap-anywhere">
+              {recommendation.title}
+            </h2>
+            <Button asChild className="mt-4 min-h-11 w-full">
+              <Link to={recommendation.href}>
+                {recommendation.action} <ArrowRight size={16} />
+              </Link>
+            </Button>
+            {recommendation.activeSession && (
+              <Link
+                to={`/practice/session/${recommendation.activeSession.id}`}
+                className="mt-3 flex min-h-11 items-center justify-between text-xs text-primary"
+              >
+                <span>
+                  继续作答 · 第 {recommendation.activeSession.current}/
+                  {recommendation.activeSession.total} 题
+                </span>
+                <ChevronRight size={16} />
+              </Link>
+            )}
+          </div>
+        )}
+      </section>
       <section className="mt-7" aria-labelledby="learning-title">
         <div className="mb-2 flex items-center justify-between">
           <h2 id="learning-title" className="text-[15px] font-semibold">
@@ -23,16 +70,6 @@ export function HomePage() {
             详细报告 <ChevronRight size={14} />
           </Link>
         </div>
-        {analytics.status === 'loading' && (
-          <p role="status" className="py-4 text-sm">
-            正在读取学习记录…
-          </p>
-        )}
-        {analytics.status === 'error' && (
-          <p role="alert" className="py-4 text-sm">
-            学习记录暂时无法读取，请刷新后重试。
-          </p>
-        )}
         {analytics.status === 'ready' && (
           <>
             <div className="grid grid-cols-3 gap-2 border-y border-border py-4">

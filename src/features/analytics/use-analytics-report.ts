@@ -2,13 +2,18 @@ import { useEffect, useState } from 'react';
 import { useCatalog } from '@/app/catalog-context';
 import { analyticsRepository } from '@/data';
 import { summarizeLearningReport } from '@/domain/analytics';
+import type { AnalyticsSnapshot } from '@/domain/analytics';
 
 export function useAnalyticsReport() {
   const catalog = useCatalog();
   const [state, setState] = useState<
     | { status: 'loading' }
     | { status: 'error' }
-    | { status: 'ready'; report: ReturnType<typeof summarizeLearningReport> }
+    | {
+        status: 'ready';
+        report: ReturnType<typeof summarizeLearningReport>;
+        snapshot: AnalyticsSnapshot;
+      }
   >({ status: 'loading' });
 
   useEffect(() => {
@@ -20,6 +25,7 @@ export function useAnalyticsReport() {
           setState({
             status: 'ready',
             report: summarizeLearningReport(snapshot, catalog),
+            snapshot,
           });
       })
       .catch((error: unknown) => {
