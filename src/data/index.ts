@@ -3,6 +3,7 @@ import { CatalogRepository } from './catalog-repository';
 import { ContentRepository } from './content-repository';
 import { PracticeRepository } from './practice-repository';
 import { AnalyticsRepository } from './analytics-repository';
+import { BackupRepository } from './backup-repository';
 import { initializeDatabase } from './initialize';
 import {
   hasPrivateBank,
@@ -22,6 +23,7 @@ export const catalogRepository = new CatalogRepository(database);
 export const contentRepository = new ContentRepository(database);
 export const practiceRepository = new PracticeRepository(database);
 export const analyticsRepository = new AnalyticsRepository(database);
+export const backupRepository = new BackupRepository(database);
 export async function initializeLocalData() {
   await initializeDatabase(database);
   const root = `${import.meta.env.BASE_URL}content/bank/`;

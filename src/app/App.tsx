@@ -60,6 +60,11 @@ const AnalyticsPage = lazy(() =>
     default: module.AnalyticsPage,
   })),
 );
+const BackupPage = lazy(() =>
+  import('../features/backup/BackupPage').then((module) => ({
+    default: module.BackupPage,
+  })),
+);
 
 function AppShell() {
   const [state, setState] = useState<{
@@ -176,6 +181,7 @@ function AppShell() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/backup" element={<BackupPage />} />
                 <Route path="/learn" element={<KnowledgePage />} />
                 <Route path="/learn/:moduleId" element={<ModulePage />} />
                 <Route

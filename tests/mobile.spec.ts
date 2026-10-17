@@ -1,4 +1,81 @@
 import { expect, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+
+test('学习记录下载后可在新浏览器空间恢复', async ({
+  page,
+  browser,
+}, testInfo) => {
+  await page.goto('/practice');
+  await page.getByRole('button', { name: '开始练习真题' }).click();
+  await expect(
+    page.getByRole('heading', { level: 1, name: /第 1 题/ }),
+  ).toBeVisible();
+  const correct = await optionIndex(page, true);
+  await page
+    .getByRole('group', { name: '选择答案' })
+    .getByRole('button')
+    .nth(correct)
+    .click();
+  await expect(page.getByText(/已保存/)).toBeVisible();
+  await page.getByRole('button', { name: /交卷并查看解析/ }).click();
+  await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible({
+    timeout: 15000,
+  });
+  await page.getByRole('link', { name: '首页', exact: true }).click();
+  await page.getByRole('link', { name: '备份与恢复学习记录' }).click();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: '下载学习记录' }).click();
+  const download = await downloadPromise;
+  const bytes = await readFile(await download.path());
+  const backup = JSON.parse(bytes.toString()) as {
+    answers: unknown[];
+    sessions: unknown[];
+  };
+  expect(backup.answers).toHaveLength(5);
+  expect(backup.sessions).toHaveLength(1);
+
+  const context = await browser.newContext({
+    baseURL: 'http://127.0.0.1:4187',
+    viewport: page.viewportSize() ?? { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
+  try {
+    const restored = await context.newPage();
+    await restored.goto('/backup');
+    await restored.locator('#backup-file').setInputFiles({
+      name: download.suggestedFilename(),
+      mimeType: 'application/json',
+      buffer: bytes,
+    });
+    await expect(restored.getByText('新增作答：5')).toBeVisible();
+    expect(
+      await restored.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+    await restored.screenshot({
+      path: testInfo.outputPath('backup-preview.png'),
+      fullPage: true,
+    });
+    await restored.getByRole('button', { name: '确认恢复' }).click();
+    await expect(
+      restored.getByRole('heading', { name: '备份与恢复' }),
+    ).toBeVisible();
+    await restored.getByRole('link', { name: '返回首页' }).click();
+    await restored.getByRole('link', { name: '详细报告' }).click();
+    await expect(
+      restored.getByRole('heading', { name: '最近 1 套练习' }),
+    ).toBeVisible();
+    expect(
+      await restored.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+  } finally {
+    await context.close();
+  }
+});
 
 test('首页学习概况和详细报告使用真实作答记录', async ({ page }, testInfo) => {
   await page.goto('/');
@@ -286,8 +363,11 @@ test('大模块首次导入后可交卷并显示正确模块', async ({ page }) 
     .getByRole('button')
     .first()
     .click();
+  await expect(page.getByText(/已保存/)).toBeVisible();
   await page.getByRole('button', { name: /交卷并查看解析/ }).click();
-  await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '练习结果' })).toBeVisible({
+    timeout: 15000,
+  });
   await expect(page.getByText('判断推理 / 真题 · 已交卷')).toBeVisible();
 });
 

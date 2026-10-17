@@ -1,4 +1,4 @@
-import { ArrowUpRight, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, ChevronRight, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '../../components/ui/button';
@@ -128,6 +128,15 @@ export function HomePage() {
         </div>
         <ModuleList />
       </section>
+      <Link
+        to="/backup"
+        className="mt-7 flex min-h-11 items-center justify-between border-t border-border pt-3 text-xs text-primary"
+      >
+        <span className="inline-flex items-center gap-2">
+          <Download size={15} /> 备份与恢复学习记录
+        </span>
+        <ChevronRight size={15} />
+      </Link>
       <p className="mt-[34px] text-center text-[10px] text-muted-foreground">
         为专注学习而设计 · 当前浏览器本地保存
       </p>
